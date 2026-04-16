@@ -1,0 +1,38 @@
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Editor settings (personal)
+.vscode/settings.json
+.vscode/launch.json
+.idea/
+
+# Claude Code local settings (this repo is a skill provider, not consumer)
+.claude/
+.cursor/
+!.cursor/rules/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Temporary / cache
+*.tmp
+*.log
+.cache/
+.turbo/
+
+# Node (future-proof)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build output
+dist/
+build/
+out/
