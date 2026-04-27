@@ -3,6 +3,8 @@
 Next.js 16 App Router 특화 규칙. Page 구조, Providers, 'use client' 배치, 특수 파일.
 
 > Cross-reference: [Next.js App Router docs](https://nextjs.org/docs/app), [Claude Code Skills BP](https://platform.claude.com/docs/en/agents-and-tools/agent-skills)
+>
+> **Override Policy**: 이 파일의 모든 🚫 MUST 규칙은 [SKILL.md Override Policy (Q4-B)](../SKILL.md#override-policy-q4-b) 적용 — 사용자 명시 요청 시 경고 후 진행.
 
 ---
 
@@ -65,7 +67,7 @@ export default function ProductsPage() {
 | `entities/types.ts` | **금지** | 타입 전용, 서버 호환 |
 | `entities/api.ts` | **금지** | 서버/클라이언트 양쪽에서 사용 가능 |
 | `entities/schema.ts` | **금지** | 타입/스키마 전용 |
-| `entities/query-keys.ts` | **금지** | 데이터 전용 |
+| `entities/queries.ts` | **금지** | 데이터 전용 |
 | `shared/ui/` | **인터랙티브만** | useState/onClick 사용 컴포넌트만 |
 | `shared/lib/` | **hook만** | use 접두사 파일만 |
 

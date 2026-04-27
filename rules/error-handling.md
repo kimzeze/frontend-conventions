@@ -1,6 +1,8 @@
 # Error Handling
 
-API 에러 처리 규칙. ApiError 클래스 기반 계층적 에러 처리.
+API 에러 처리 규칙. ApiError 클래스 기반 계층적 에러 처리. Toast 라이브러리는 [LIB-05](library-choices.md#lib-05-toast-알림-must) lock-in.
+
+> **Override Policy**: 이 파일의 모든 🚫 MUST 규칙은 [SKILL.md Override Policy (Q4-B)](../SKILL.md#override-policy-q4-b) 적용 — 사용자 명시 요청 시 경고 후 진행.
 
 ---
 

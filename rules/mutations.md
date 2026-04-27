@@ -1,8 +1,10 @@
 # Mutations
 
-TanStack Query v5 기반 **쓰기 mutation** 규칙. invalidate, useApiMutation, optimistic updates.
+TanStack Query v5 기반 **쓰기 mutation** 규칙. invalidate, useApiMutation, optimistic updates. 라이브러리 선택은 [LIB-02](library-choices.md#lib-02-데이터-페칭-must--최강-규칙) lock-in.
 
 > Cross-reference: TanStack Query BP (`mut-invalidate-queries`, `mut-optimistic-updates`)
+>
+> **Override Policy**: 이 파일의 모든 🚫 MUST 규칙은 [SKILL.md Override Policy (Q4-B)](../SKILL.md#override-policy-q4-b) 적용 — 사용자 명시 요청 시 경고 후 진행.
 
 ---
 
@@ -44,7 +46,6 @@ export const useCreateProductForm = () => {
 ```
 
 > **Note**: TanStack Query 공식 문서는 mutation hook 안에서 invalidation + side effects를 함께 넣는 패턴을 보여준다. 우리는 **관심사 분리**를 위해 entity(invalidation) / feature(toast) 분리를 채택. 이유: 같은 mutation hook을 다른 feature에서 다른 toast로 재사용할 수 있음.
-```
 
 **무효화 전략**:
 

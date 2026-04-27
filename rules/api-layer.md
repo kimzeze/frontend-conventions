@@ -3,6 +3,8 @@
 API 함수 구조, 응답 타입, SSR prefetch 규칙. `entities/*/api.ts` 파일의 구조.
 
 > Cross-reference: [Next.js App Router](https://nextjs.org/docs/app), TanStack Query BP (`ssr-dehydration`)
+>
+> **Override Policy**: 이 파일의 모든 🚫 MUST 규칙은 [SKILL.md Override Policy (Q4-B)](../SKILL.md#override-policy-q4-b) 적용 — 사용자 명시 요청 시 경고 후 진행.
 
 ---
 

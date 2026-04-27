@@ -1,8 +1,10 @@
 # Queries
 
-TanStack Query v5 기반 **읽기 쿼리** 규칙. queryOptions factory, query key, 캐시, staleTime, prefetch, useQueries, infinite query.
+TanStack Query v5 기반 **읽기 쿼리** 규칙. queryOptions factory, query key, 캐시, staleTime, prefetch, useQueries, infinite query. 라이브러리 선택은 [LIB-02](library-choices.md#lib-02-데이터-페칭-must--최강-규칙) lock-in.
 
 > Cross-reference: TanStack Query BP (`qk-factory-pattern`, `cache-invalidation`, `perf-select-transform`, `cache-stale-time`, `cache-placeholder-vs-initial`, `pf-intent-prefetch`)
+>
+> **Override Policy**: 이 파일의 모든 🚫 MUST 규칙은 [SKILL.md Override Policy (Q4-B)](../SKILL.md#override-policy-q4-b) 적용 — 사용자 명시 요청 시 경고 후 진행.
 
 ## 아키텍처 결정
 
