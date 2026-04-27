@@ -2,6 +2,8 @@
 
 파일, 변수, 타입, 상수, 훅, 컴포넌트의 네이밍 규칙.
 
+> **Override Policy**: 이 파일의 모든 🚫 MUST 규칙은 [SKILL.md Override Policy (Q4-B)](../SKILL.md#override-policy-q4-b) 적용 — 사용자 명시 요청 시 경고 후 진행.
+
 ---
 
 ## NM-01 파일명 규칙 (🚫 MUST)
@@ -10,7 +12,7 @@
 
 | 위치 | 규칙 | 예시 |
 |------|------|------|
-| entity 내부 | 고정명 | `api.ts`, `hooks.ts`, `types.ts`, `schema.ts`, `query-keys.ts`, `columns.tsx`, `index.ts` |
+| entity 내부 | 고정명 | `api.ts`, `queries.ts`, `hooks.ts`, `types.ts`, `schema.ts`, `columns.tsx`, `index.ts` |
 | shared/lib | kebab-case | `use-table-state.ts`, `table-utils.ts` |
 | shared/ui | kebab-case | `data-table.tsx`, `sortable-header.tsx`, `form-dialog.tsx` |
 | features/ui (다이얼로그) | PascalCase | `Create{Entity}Dialog.tsx`, `Edit{Entity}Dialog.tsx` |

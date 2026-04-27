@@ -1,6 +1,8 @@
 # Forms
 
-zod + react-hook-form + shadcn Form 기반 폼 처리 규칙.
+zod + react-hook-form + shadcn Form 기반 폼 처리 규칙. 라이브러리 선택은 [LIB-01](library-choices.md#lib-01-폼-라이브러리-must) lock-in.
+
+> **Override Policy**: 이 파일의 모든 🚫 MUST 규칙은 [SKILL.md Override Policy (Q4-B)](../SKILL.md#override-policy-q4-b) 적용 — 사용자 명시 요청 시 경고 후 진행.
 
 ---
 

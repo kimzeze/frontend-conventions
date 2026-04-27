@@ -1,6 +1,8 @@
 # Tables
 
-TanStack Table v8 기반 데이터 테이블 규칙. 서버사이드 처리 전용.
+TanStack Table v8 기반 데이터 테이블 규칙. 서버사이드 처리 전용. 라이브러리 선택은 [LIB-04](library-choices.md#lib-04-테이블-must) lock-in.
+
+> **Override Policy**: 이 파일의 모든 🚫 MUST 규칙은 [SKILL.md Override Policy (Q4-B)](../SKILL.md#override-policy-q4-b) 적용 — 사용자 명시 요청 시 경고 후 진행.
 
 ---
 
