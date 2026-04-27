@@ -24,6 +24,7 @@ Thumbs.db
 *.log
 .cache/
 .turbo/
+.context/
 
 # Node (future-proof)
 node_modules/
