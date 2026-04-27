@@ -539,7 +539,44 @@ RFC 2119 단어에 이모지 병기:
 - **요약만 제공**: AI 응답 일관성 저하
 - **완전 자동화 스크립트**: 규칙 변경 시 스크립트도 업데이트 필요
 
-**Related**: [AGENTS.md Validation Workflow](./AGENTS.md)
+**Related**: [SKILL.md Validation Workflow](./SKILL.md). v1.1.0부터 진입점은 `SKILL.md`로 단일화 (AGENTS.md 삭제).
+
+---
+
+## ADR-020: v1.1.0 — Position 재정립 + Library Choices 카테고리 + FSD 위임
+
+**Status**: Accepted (v1.1.0, 2026-04-27)
+
+**Context**
+v1.0.0 운영하면서 두 가지 문제 발견:
+1. **AI가 "BP 따르라"는 모호한 지시에서 흔들림** — TanStack Query, FSD, Vercel React 등 BP에 여러 valid 방향 존재. 우리 harness는 그중 한 방향만 박아야 가치가 있음.
+2. **다른 공식 skill과의 경계 불명확** — `feature-sliced-design`, `tanstack-query-best-practices`, `next-best-practices` 같은 공식 skill 등장. 우리가 같은 영역을 prose로 반복하면 drift 발생.
+
+**Decision**
+1. **Position 재정립**: 이 harness는 다른 BP skill의 여러 옵션 중 **사용자가 선택한 한 방향만 고정**하는 도구. 이 skill의 규칙이 다른 BP skill과 충돌 시 이 skill이 우선.
+2. **Library Choices 카테고리 신설** (`rules/library-choices.md`, LIB-01~06, 모두 MUST): 폼/data fetching/URL state/table/toast/UI 라이브러리 선택 lock-in.
+3. **FSD 아키텍처는 `feature-sliced-design` skill에 전적 위임**: PS-01 (FSD layers), PS-02 (import 방향), PS-06 (widget 정의), PS-07 (feature 정의) 삭제. PS-03 (entity 파일 고정명)만 "FSD 안티패턴 의도적 override"로 유지.
+4. **Override Policy 명문화 (Q4-B)**: 모든 MUST 규칙은 사용자 명시 요청 시 경고 후 진행. AI는 규정된 형식으로 알림.
+5. **Zustand 정책 전환**: SM-01의 "Zustand 금지" → "4-카테고리 분류, Zustand는 client-global only". TkDodo BP 4개 추가 (SM-10~13).
+6. **Claude Code 전용 단순화**: AGENTS.md, CLAUDE.md 삭제. SKILL.md를 canonical 진입점.
+
+**Consequences**
+- ✓ AI가 "BP 따르라"에서 흔들리지 않음 (Library Choices가 결정 트리)
+- ✓ 다른 skill과 같이 설치해도 충돌 없이 보완 관계
+- ✓ FSD 공식 skill 업데이트가 자동 반영 (위임이므로)
+- ✓ "Zustand 금지" 잘못된 단정 해소 — TanStack Query/nuqs 영역이 아닌 client-global state는 Zustand가 정답
+- ✗ ADR-001의 5 layers 규정이 이제 의미 없음 (FSD skill이 6 layers 규정)
+- ✗ Documentation drift 위험 — INDEX.md, SKILL.md, README.md, library-choices.md 4곳에 LIB 관련 정보 분산
+
+**Alternatives considered**
+- **다른 skill과 중복 규칙 모두 삭제**: 사용자 선택이 아닌 단순 정보 공유면 valid했으나, "한 방향 고정"이 이 harness의 가치이므로 삭제하면 안 됨.
+- **Zustand 계속 금지**: client-global state 영역에서 Context/Redux/jotai 중 하나 선택해야 함. Zustand가 가장 가볍고 TkDodo BP가 명확하여 선택.
+- **AGENTS.md 유지**: Claude Code 전용 결정과 모순. Q1=A에 따라 삭제.
+
+**Related**: [SKILL.md](./SKILL.md), [rules/library-choices.md](./rules/library-choices.md), [rules/state-management.md](./rules/state-management.md), [feature-sliced-design skill](https://skills.sh/feature-sliced/skills/feature-sliced-design).
+
+**Supersedes (partial)**:
+- ADR-001 (FSD 5 layers 채택) — FSD skill에 위임. 우리는 더 이상 layer 수 강제하지 않음.
 
 ---
 

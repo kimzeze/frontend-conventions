@@ -1,56 +1,66 @@
 # Frontend Conventions Index
 
-> AI 에이전트가 가장 먼저 읽는 파일. 모든 규칙의 요약과 상세 파일 링크를 제공한다.
+> AI 에이전트가 참조하는 73개 규칙의 요약 + 상세 파일 링크.
 
 ## Entity 구조 템플릿
 
-새 entity를 만들 때 아래 구조를 따른다:
+새 entity를 만들 때 아래 구조 (PS-03):
 
 ```
 entities/{entity-name}/
-├── api.ts           # API 함수
+├── api.ts           # API 함수 (DF-08)
 ├── queries.ts       # queryOptions factory + key factory (DF-01)
-├── hooks.ts         # Mutation 훅 (useApiMutation)
+├── hooks.ts         # Mutation 훅 (useApiMutation, DF-07)
 ├── types.ts         # 도메인 타입
-├── schema.ts        # Zod 스키마 + FormValues (폼이 있을 때)
-├── columns.tsx      # 테이블 컬럼 정의 (테이블이 있을 때)
-└── index.ts         # Barrel export
+├── schema.ts        # Zod 스키마 + FormValues (폼이 있을 때, FM-01)
+├── columns.tsx      # 테이블 컬럼 정의 (테이블이 있을 때, TB-02)
+└── index.ts         # Barrel export (PS-05)
 ```
 
 ## 작업별 참조 가이드
 
 | 작업 | 읽어야 할 규칙 파일 |
 |------|---------------------|
-| 새 entity 추가 | architecture → api-layer → queries → mutations → naming |
-| CRUD 폼 구현 | forms → mutations (DF-06, DF-07) → naming |
-| 테이블 페이지 구현 | tables → state-management → queries |
-| 새 페이지/라우트 추가 | nextjs-patterns → architecture (PS-02, PS-05) |
+| 새 entity 추가 | architecture (PS-03) → api-layer → queries → mutations → naming |
+| CRUD 폼 구현 | library-choices (LIB-01) → forms → mutations |
+| 테이블 페이지 | library-choices (LIB-03, LIB-04) → tables → state-management → queries |
+| 새 페이지/라우트 | nextjs-patterns → architecture (PS-05) |
+| 데이터 페칭 영역 | **library-choices (LIB-02)** → queries → mutations |
+| 전역 상태 도입 | **state-management (SM-01)** → SM-10~13 (Zustand BP) |
 | 에러 처리 | error-handling |
-| 성능 최적화 | code-quality → queries (DF-10~12) |
-| 기존 코드 리팩토링 | 해당 영역의 규칙 파일 전체 |
+| 성능 최적화 | code-quality → queries (DF-10~12) → state-management (SM-08, 09) |
 
 ---
 
 ## 전체 규칙 인덱스
 
-### Architecture — [rules/architecture.md](rules/architecture.md)
+### ⭐ Library Choices — [rules/library-choices.md](rules/library-choices.md)
 
-FSD 레이어 구성, import 방향, 파일 배치, 추상화 수준.
+라이브러리 선택 lock-in. 다른 BP skill이 보여주는 여러 옵션 중 하나만 고정.
 
 | ID | 규칙 | 엄격도 |
 |----|------|--------|
-| PS-01 | FSD 레이어 구조 (app/widgets/features/entities/shared) | 🚫 MUST |
-| PS-02 | Import 방향: 하향만 허용 | 🚫 MUST |
-| PS-03 | Entity slice 파일 구성 | 🚫 MUST |
+| LIB-01 | 폼: react-hook-form + zod | 🚫 MUST |
+| LIB-02 | 데이터 페칭: TanStack Query v5 (useEffect+fetch 절대 금지) | 🚫 MUST |
+| LIB-03 | URL 상태: nuqs (useSearchParams 직접 사용 금지) | 🚫 MUST |
+| LIB-04 | 테이블: TanStack Table v8 + DataTable 래퍼 | 🚫 MUST |
+| LIB-05 | Toast: sonner | 🚫 MUST |
+| LIB-06 | UI: shadcn/ui + radix + Tailwind v4 | 🚫 MUST |
+
+### Architecture — [rules/architecture.md](rules/architecture.md)
+
+> FSD 일반(레이어/import/slice/widget/feature 정의)은 [`feature-sliced-design`](https://skills.sh/feature-sliced/skills/feature-sliced-design) skill에 전적 위임. 이 카테고리는 그 위에 우리 harness가 추가 고정한 컨벤션.
+
+| ID | 규칙 | 엄격도 |
+|----|------|--------|
+| PS-03 | Entity slice 파일 고정명 (FSD 안티패턴 의도적 override) | 🚫 MUST |
 | PS-05 | Barrel export 패턴 (FSD 경계에서만) | 🚫 MUST |
-| PS-06 | Widget = 테이블+상태+다이얼로그 조합 | ⚠️ SHOULD |
-| PS-07 | Feature = 사용자 액션 단위 | ⚠️ SHOULD |
 | PS-08 | @workspace/ import 스코프 | 🚫 MUST |
 | PS-12 | 단순 중복 > 과도한 추상화 | ⚠️ SHOULD |
 
-### Next.js Patterns — [rules/nextjs-patterns.md](rules/nextjs-patterns.md)
+> **삭제됨** (`feature-sliced-design` skill 위임): PS-01 (FSD 5 layers), PS-02 (import 하향 방향), PS-06 (widget 정의), PS-07 (feature 정의).
 
-Next.js 16 App Router 특화 — Page, Providers, 'use client', 특수 파일.
+### Next.js Patterns — [rules/nextjs-patterns.md](rules/nextjs-patterns.md)
 
 | ID | 규칙 | 엄격도 |
 |----|------|--------|
@@ -61,8 +71,6 @@ Next.js 16 App Router 특화 — Page, Providers, 'use client', 특수 파일.
 
 ### Code Quality — [rules/code-quality.md](rules/code-quality.md)
 
-코드 품질 & 성능 — Dynamic Import, Conditional, Early Return, forwardRef.
-
 | ID | 규칙 | 엄격도 |
 |----|------|--------|
 | PS-09 | Dynamic import (next/dynamic) | ⚠️ SHOULD |
@@ -72,11 +80,11 @@ Next.js 16 App Router 특화 — Page, Providers, 'use client', 특수 파일.
 
 ### Queries — [rules/queries.md](rules/queries.md)
 
-TanStack Query v5 읽기 쿼리 — queryOptions, query keys, staleTime, prefetch.
+TanStack Query v5 읽기 쿼리.
 
 | ID | 규칙 | 엄격도 |
 |----|------|--------|
-| DF-01 | queryOptions factory (queries.ts) | 🚫 MUST |
+| DF-01 | queryOptions factory (queries.ts 통합) | 🚫 MUST |
 | DF-02 | Query key에 모든 의존성 포함 | 🚫 MUST |
 | DF-03 | useQuery 훅 구조 (keepPreviousData) | ⚠️ SHOULD |
 | DF-04 | placeholderData vs initialData 구분 | ⚠️ SHOULD |
@@ -89,17 +97,13 @@ TanStack Query v5 읽기 쿼리 — queryOptions, query keys, staleTime, prefetc
 
 ### Mutations — [rules/mutations.md](rules/mutations.md)
 
-쓰기 mutation — invalidate, useApiMutation, optimistic.
-
 | ID | 규칙 | 엄격도 |
 |----|------|--------|
-| DF-06 | Mutation: invalidate + toast on success | 🚫 MUST |
-| DF-07 | useApiMutation 래퍼 사용 | 🚫 MUST |
+| DF-06 | Mutation: invalidate (entity) + toast (feature) | 🚫 MUST |
+| DF-07 | useApiMutation 래퍼 강제 | 🚫 MUST |
 | DF-13 | Optimistic updates (예측 가능한 액션) | ✅ MAY |
 
 ### API Layer — [rules/api-layer.md](rules/api-layer.md)
-
-API 함수 구조 + 응답 타입 + SSR.
 
 | ID | 규칙 | 엄격도 |
 |----|------|--------|
@@ -133,7 +137,7 @@ API 함수 구조 + 응답 타입 + SSR.
 
 | ID | 규칙 | 엄격도 |
 |----|------|--------|
-| SM-01 | 상태 카테고리 분류 (서버/URL/로컬) | 🚫 MUST |
+| SM-01 | 상태 4-카테고리 분류 (서버/URL/로컬/Zustand) | 🚫 MUST |
 | SM-02 | URL 상태는 nuqs로 관리 | 🚫 MUST |
 | SM-03 | useTableState 훅 패턴 | ⚠️ SHOULD |
 | SM-04 | Dialog 상태: useDialogState | ⚠️ SHOULD |
@@ -142,6 +146,10 @@ API 함수 구조 + 응답 타입 + SSR.
 | SM-07 | useEffect 의존성 최적화 (원시값 사용) | ⚠️ SHOULD |
 | SM-08 | startTransition (비긴급 업데이트) | ✅ MAY |
 | SM-09 | Deferred state reads | ✅ MAY |
+| SM-10 | Zustand: custom hook만 export | 🚫 MUST |
+| SM-11 | Zustand: atomic selector | 🚫 MUST |
+| SM-12 | Zustand: actions namespace 분리 | ⚠️ SHOULD |
+| SM-13 | Zustand: action을 domain event로 명명 | ⚠️ SHOULD |
 
 ### Error Handling — [rules/error-handling.md](rules/error-handling.md)
 
@@ -173,17 +181,19 @@ API 함수 구조 + 응답 타입 + SSR.
 
 | 항목 | 수 |
 |------|-----|
-| 총 규칙 수 | 67 |
-| 🚫 MUST | 25 |
-| ⚠️ SHOULD | 33 |
-| ✅ MAY | 9 |
-| 규칙 파일 | 11 |
+| 총 규칙 수 | **73** |
+| 🚫 MUST | **31** |
+| ⚠️ SHOULD | **33** |
+| ✅ MAY | **9** |
+| 규칙 파일 | **12** |
 
 ## Cross-reference 출처
 
+- [feature-sliced-design skill](https://skills.sh/feature-sliced/skills/feature-sliced-design) — 아키텍처 위임
 - [Vercel React Best Practices](https://vercel.com/blog/react-best-practices) — bundle, rendering, re-render 최적화
 - [TanStack Query Best Practices](https://tanstack.com/query/latest/docs) — query key, caching, mutation 패턴
+- [TkDodo — Working with Zustand](https://tkdodo.eu/blog/working-with-zustand) — Zustand BP
 
 ## 미결 사항
 
-설계 결정 배경 및 Open Questions는 [DECISIONS.md](DECISIONS.md) 참조.
+설계 결정 배경 및 Open Questions: [DECISIONS.md](DECISIONS.md).

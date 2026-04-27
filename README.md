@@ -1,130 +1,91 @@
 # Frontend Conventions
 
-> **Next.js 16 + React 19 + TanStack Query v5 + FSD 아키텍처**를 위한 코딩 컨벤션.
-> AI 코딩 에이전트(Claude Code, Cursor, Codex, Copilot)가 자동으로 로드하여 일관된 코드를 생성하도록 돕는 **Skill**입니다.
+> **Next.js 16 + React 19 + TanStack Query v5 + FSD** 기반 개인 프론트엔드 harness.
+> 다른 BP skill들이 보여주는 여러 방향 중 **사용자가 선택한 한 방향만 고정**하여 AI 코드 생성·리뷰 일관성을 보장하는 **Claude Code skill**.
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](./CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
-[![Skills Compatible](https://img.shields.io/badge/skills-compatible-purple.svg)](https://github.com/vercel-labs/skills)
+[![Claude Code](https://img.shields.io/badge/Claude_Code-skill-purple.svg)](https://code.claude.com/docs/en/skills)
 
-## 왜 이 컨벤션인가
+## 왜 이 harness인가
 
-- 🎯 **좋은 코드 + 우리 코드** — 업계 BP를 따르되, 팀의 일관된 패턴으로 통일
+- 🎯 **"BP 따르라"는 모호한 지시를 한 방향 결정으로 변환** — Best Practice에도 여러 valid 방향이 있는데, 그중 하나만 고정
 - 🤖 **AI 세션 간 동일한 코드 스타일** — 누가 쓰든, 어떤 세션이든 같은 결과
-- 📐 **67개 규칙, 11개 영역** — FSD, TanStack Query, Forms, Tables, State 등 핵심 영역 커버
+- 📐 **73개 규칙, 12개 영역** — Library Choices, FSD 보완, TanStack Query, Forms, Tables, State, Naming 등
 - 🚫/⚠️/✅ **3단계 경계** — MUST / SHOULD / MAY로 엄격도 명시
+- 🔒 **Override Policy 명문화** — 사용자 명시 요청 시 경고 후 진행
+
+## 다른 skill과의 관계
+
+| 이 skill의 역할 | 위임 또는 보완 |
+|---|---|
+| **Library Choices** lock-in (LIB-01~06) | 단독 — 라이브러리 선택은 우리만 결정 |
+| **TanStack Query 패턴 강제** | `tanstack-query-best-practices` 위에 우리 선택 (queries.ts 위치, useApiMutation 래퍼 등) |
+| **FSD 아키텍처** | **`feature-sliced-design` skill에 전적 위임** — entity slice 파일 고정명만 override |
+| **Next.js 패턴** | `next-best-practices` 위에 우리 선택 (page thin shell 등) |
+| **React 성능 최적화** | `vercel-react-best-practices` 위에 우리 선택 |
 
 ## Installation
 
-[Vercel Labs Skills CLI](https://github.com/vercel-labs/skills)로 설치:
-
 ```bash
 npx skills add kimzeze/frontend-conventions
 ```
 
-지원 AI:
-- **Claude Code** — `.claude/skills/frontend-conventions/` 자동 생성
-- **Cursor** — `.cursor/skills/` 자동 생성
-- **Codex, Copilot, 기타** — AGENTS.md 표준 자동 지원
+→ `.claude/skills/frontend-conventions/`에 설치되어 Claude Code에서 자동 활성.
+
+**권장 동시 설치**:
+
+```bash
+npx skills add feature-sliced/skills          # FSD 아키텍처
+npx skills add tanstack-query-best-practices   # TanStack Query 패턴
+npx skills add next-best-practices              # Next.js 16
+npx skills add vercel-react-best-practices     # React 성능
+```
+
+→ 다른 skill들이 가르치는 패턴 위에 이 harness가 한 방향 고정.
 
 ## Usage
 
-### 1. 프로젝트에 설치 후
-
-```bash
-cd your-project
-npx skills add kimzeze/frontend-conventions
-```
-
-### 2. AI에게 작업 지시
+### 1. 새 코드 생성
 
 ```
-# 컨벤션 기반 코드 생성
 "frontend-conventions를 따라 새 product entity를 만들어줘"
+```
 
-# 프로젝트 검증
+→ Library Choices(LIB-01~06) + entity 파일 고정명(PS-03) + 4-카테고리 상태(SM-01) + 폼 패턴(FM-03) 등 자동 적용.
+
+### 2. 프로젝트 검증
+
+```
 "이 프로젝트를 frontend-conventions 기준으로 검증해줘"
-# → AGENTS.md의 Validation Workflow 15단계 체크리스트 실행
+```
 
-# 리팩토링
+→ SKILL.md의 14단계 Validation Workflow 자동 실행.
+
+### 3. 리팩토링
+
+```
 "entities/product가 컨벤션에 맞지 않는 부분 리팩토링해줘"
 ```
 
-### 3. 수동 참조 (AI 없이)
+## AI가 가장 흔히 저지르는 실수 Top 3 (이 skill이 차단)
 
-- **[AGENTS.md](./AGENTS.md)** — 진입점 (Tech Stack, Validation Workflow)
-- **[INDEX.md](./INDEX.md)** — 67개 규칙 전체 인덱스
-- **[rules/](./rules)** — 카테고리별 상세 규칙 (11파일)
-- **[DECISIONS.md](./DECISIONS.md)** — ADR 형식의 설계 결정 (19개 ADR + 5개 Open Questions)
-
-## Rule Categories
-
-| 영역 | 파일 | 규칙 수 | 주제 |
-|------|------|---------|------|
-| Architecture | [rules/architecture.md](./rules/architecture.md) | 8 | FSD 레이어, import 방향, entity slice |
-| Next.js Patterns | [rules/nextjs-patterns.md](./rules/nextjs-patterns.md) | 4 | Page, Providers, 'use client', 특수 파일 |
-| Code Quality | [rules/code-quality.md](./rules/code-quality.md) | 4 | Dynamic import, Conditional, Early Return |
-| Queries | [rules/queries.md](./rules/queries.md) | 10 | queryOptions factory, staleTime, prefetch |
-| Mutations | [rules/mutations.md](./rules/mutations.md) | 3 | invalidate, useApiMutation, optimistic |
-| API Layer | [rules/api-layer.md](./rules/api-layer.md) | 3 | API 객체, 응답 타입, SSR |
-| Forms | [rules/forms.md](./rules/forms.md) | 7 | zod + react-hook-form + shadcn Form |
-| Tables | [rules/tables.md](./rules/tables.md) | 5 | TanStack Table instance, server-side |
-| State Management | [rules/state-management.md](./rules/state-management.md) | 9 | nuqs, useState, 전역 상태 금지 |
-| Error Handling | [rules/error-handling.md](./rules/error-handling.md) | 6 | ApiError, toast, Error Boundary |
-| Naming | [rules/naming.md](./rules/naming.md) | 8 | 파일/훅/타입/상수/컴포넌트 네이밍 |
-
-## Tech Stack
-
-이 컨벤션은 아래 스택을 전제로 합니다:
-
-- **Next.js** 16.1.6 (App Router) + **React** 19.2.3 + **TypeScript** 5.9.2
-- **@tanstack/react-query** ^5 + **@tanstack/react-table** ^8
-- **react-hook-form** + **zod**
-- **nuqs** (URL state)
-- **Tailwind CSS** + **shadcn/ui** + **sonner**
-- **Turborepo** + **pnpm workspace**
-
-다른 스택에서도 참고 가능하지만, 일부 규칙(queryOptions, useApiMutation 등)은 직접 적용되지 않을 수 있습니다.
-
-## Rule Format
-
-각 규칙은 다음 구조를 따릅니다:
-
-```markdown
-## [ID] 규칙 이름 (🚫 MUST)
-
-**적용 위치**: `entities/*/queries.ts`
-
-**규칙**: 한 문장 명령형.
-
-**Do**: 올바른 코드 예제
-
-**Don't**: 잘못된 코드 예제
-
-**Why**: 이유 설명.
-```
-
-### 엄격도 레벨
-
-| 레벨 | 의미 | AI 행동 |
-|------|------|---------|
-| 🚫 **MUST** | 절대 위반 불가 | 항상 이 패턴을 따름 |
-| ⚠️ **SHOULD** | 특별한 이유 없으면 따름 | 기본 적용, 예외 시 주석으로 이유 명시 |
-| ✅ **MAY** | 권장하지만 유연 | 상황에 맞게 판단 |
+1. **시키지 않은 `useEffect`로 데이터 페칭** → LIB-02 차단
+2. **임의로 Context/Zustand 도입** → SM-01 4-카테고리 차단
+3. **폼을 `useState`로 관리** → LIB-01 + FM-03 차단
 
 ## Documentation Structure
 
 ```
 frontend-conventions/
 ├── README.md           ← 이 파일 (공개 진입점)
-├── SKILL.md            ← Skills CLI 진입점 (npx skills add)
-├── AGENTS.md           ← AI 에이전트 진입점 (도구 중립)
-├── CLAUDE.md           ← Claude Code 진입점 (→ AGENTS.md)
-├── INDEX.md            ← 67개 규칙 전체 인덱스
-├── DECISIONS.md        ← 19 ADRs + 5 Open Questions (설계 결정 배경)
+├── SKILL.md            ← Claude Code skill 진입점 (canonical)
+├── INDEX.md            ← 73개 규칙 전체 인덱스
+├── DECISIONS.md        ← ADR 형식 설계 결정 (19 ADRs + Open Questions)
 ├── CHANGELOG.md        ← 버전별 변경사항
-└── rules/              ← 11개 카테고리별 규칙
-    ├── architecture.md
+└── rules/              ← 12개 카테고리별 규칙
+    ├── library-choices.md     ⭐ NEW (LIB-01~06)
+    ├── architecture.md        (FSD skill 위임 후 PS-03,05,08,12만)
     ├── nextjs-patterns.md
     ├── code-quality.md
     ├── queries.md
@@ -132,46 +93,56 @@ frontend-conventions/
     ├── api-layer.md
     ├── forms.md
     ├── tables.md
-    ├── state-management.md
+    ├── state-management.md    (SM-01 재작성, SM-10~13 신규 Zustand BP)
     ├── error-handling.md
     └── naming.md
 ```
 
+## Severity Levels
+
+| 레벨 | 의미 | AI 행동 |
+|------|------|---------|
+| 🚫 **MUST** | 절대 권고 | 항상 이 패턴, 사용자 override만 허용 (경고 후 진행) |
+| ⚠️ **SHOULD** | 강한 권고 | 기본 적용, 예외 시 주석으로 이유 명시 |
+| ✅ **MAY** | 권장 | 상황에 맞게 판단 |
+
 ## Contributing
 
+이 repo는 개인 harness이지만 PR/이슈 환영합니다.
+
 ### 새 규칙 제안
-1. 이슈를 열어 제안 내용 공유 (왜 필요한지, 어떤 문제를 해결하는지)
-2. [Rule Format](#rule-format)을 따라 규칙 작성
+
+1. 이슈로 제안 (왜 필요한지, 어떤 문제 해결)
+2. Rule format 따라 작성 — 모든 규칙에 `Default / Why this choice / Override policy` 구조 필수
 3. 해당 카테고리 파일에 추가 또는 새 파일 생성
-4. `AGENTS.md` + `INDEX.md` + `SKILL.md`의 관련 테이블 업데이트
-5. PR 생성
+4. SKILL.md, INDEX.md, CHANGELOG.md 업데이트
+5. PR
 
 ### 규칙 수정
-- 기존 규칙 ID(예: `DF-07`)는 유지 (기존 코드/리뷰 참조 보존)
-- Severity 변경(SHOULD → MUST) 시 breaking change — 메이저 버전 업
 
-### Breaking Changes
-- Semver를 따릅니다:
-  - `major` — 규칙 삭제, severity 강화 (SHOULD → MUST)
-  - `minor` — 규칙 추가
-  - `patch` — 예시 개선, 오타 수정
+- 기존 규칙 ID(예: DF-07)는 유지 (참조 보존)
+- Severity 변경(SHOULD → MUST)은 breaking change → 메이저 버전
+
+### Versioning
+
+- `major` — 규칙 삭제, severity 강화 (SHOULD → MUST)
+- `minor` — 규칙 추가, library 추가
+- `patch` — 예시·문구 개선, 오타 수정
 
 ## References
 
-이 컨벤션은 다음 출처의 BP를 기반으로 합니다:
-
+- [Anthropic Claude Skills](https://code.claude.com/docs/en/skills)
 - [Anthropic Skill best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices)
-- [AGENTS.md spec](https://agents.md/)
+- [Feature-Sliced Design](https://feature-sliced.design)
 - [TanStack Query v5](https://tanstack.com/query/latest)
 - [TanStack Table v8](https://tanstack.com/table/latest)
-- [Feature-Sliced Design](https://feature-sliced.design)
-- [Vercel React Best Practices](https://vercel.com/blog/introducing-react-best-practices)
-- [Next.js App Router docs](https://nextjs.org/docs/app)
+- [TkDodo — Working with Zustand](https://tkdodo.eu/blog/working-with-zustand)
 
 ## Version
 
-- **v1.0.0** (현재) — 67개 규칙, 11개 영역
+- **v1.1.0** (현재) — Library Choices 카테고리 신설, Zustand BP 추가, FSD 위임, Override Policy 명문화
+- v1.0.0 — 초기 release (67 rules, 11 categories)
 
 ## License
 
-MIT — 자유롭게 사용, 수정, 배포 가능합니다. [LICENSE](./LICENSE) 참조.
+MIT
