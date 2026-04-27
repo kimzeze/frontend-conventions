@@ -1,115 +1,16 @@
 # Architecture
 
-FSD(Feature-Sliced Design) 기반 프로젝트 아키텍처 규칙. 레이어 구성, import 방향, 파일 배치, 추상화 수준.
-
-> Cross-reference: [Feature-Sliced Design](https://feature-sliced.design), [TanStack Query BP](https://tanstack.com/query)
-
----
-
-## PS-01 FSD 레이어 구조 (🚫 MUST)
-
-**규칙**: 프로젝트는 FSD 5개 레이어로 구성하며, `src/` 디렉토리 없이 앱 루트에 직접 배치한다.
-
-**Do**:
-
-```
-apps/{app-name}/
-├── app/                    # Next.js App Router (라우트 전용)
-│   ├── (dashboard)/        # 사이드바 있는 페이지 그룹
-│   │   ├── products/
-│   │   │   └── page.tsx
-│   │   └── layout.tsx
-│   └── login/              # 사이드바 없는 페이지
-│       └── page.tsx
-├── entities/               # 도메인 모델 + 쿼리
-│   ├── product/
-│   └── category/
-├── features/               # 사용자 액션 (폼, 다이얼로그)
-│   └── product/
-├── widgets/                # 페이지 수준 조합 컴포넌트
-│   └── product-table.tsx
-└── shared/                 # 공유 유틸리티, UI, 타입
-    ├── ui/
-    ├── lib/
-    ├── config/
-    └── types/
-```
-
-**Don't**:
-
-```
-apps/{app-name}/
-├── src/                    # ❌ src/ 디렉토리 사용 금지
-│   ├── components/         # ❌ FSD 레이어가 아닌 기능별 분류
-│   ├── hooks/              # ❌ 훅을 한 곳에 모으지 않음
-│   └── utils/              # ❌ shared/lib 사용
-```
-
-**Why**: FSD는 관심사를 도메인 단위로 분리하여 코드 탐색성과 독립성을 높인다. `src/`를 생략하면 경로가 짧아지고 Next.js App Router와 자연스럽게 공존한다.
+> **FSD 위임**: FSD 레이어 구조, import 방향, slice 정의, widget/feature 정의는 공식 [`feature-sliced-design`](https://skills.sh/feature-sliced/skills/feature-sliced-design) skill에 **전적 위임**한다. 이 파일은 그 위에 우리 harness가 추가로 고정한 컨벤션만 다룬다.
+>
+> **삭제된 규칙**: PS-01 (FSD 레이어 구조), PS-02 (import 하향 방향), PS-06 (widget = 조합), PS-07 (feature = 사용자 액션) — 모두 `feature-sliced-design` skill에서 다룸.
 
 ---
 
----
-
-## PS-02 Import 방향 (🚫 MUST)
-
-**규칙**: Import는 반드시 하향만 허용한다. 상위 레이어가 하위 레이어를 import하며, 역방향은 금지.
-
-```
-app → widgets → features → entities → shared
-```
-
-**Do**:
-
-```ts
-// widgets/product-table.tsx — feature와 entity를 import
-import { CreateProductDialog } from '@/features/product/ui/CreateProductDialog'
-import { useProductList, productColumns } from '@/entities/product'
-import { DataTable } from '@/shared/ui/data-table'
-
-// entities/product/hooks.ts — shared만 import
-import { clientFetch } from '@workspace/api/fetch/clientFetch'
-```
-
-**Don't**:
-
-```ts
-// ❌ entity가 feature를 import
-// entities/product/hooks.ts
-import { CreateProductDialog } from '@/features/product/ui/CreateProductDialog'
-
-// ❌ shared가 entity를 import
-// shared/ui/data-table.tsx
-import { Product } from '@/entities/product'
-
-// ❌ entity가 다른 entity를 import (type-only도 금지)
-// entities/product/columns.tsx
-import type { Category } from '@/entities/category'
-// → widget에서 categoryMap을 주입하는 팩토리 함수로 해결
-```
-
-**entity 간 데이터가 필요한 경우**: widget에서 주입 패턴 사용.
-
-```ts
-// Do — widget에서 주입
-export function createProductColumns(categoryMap: Map<number, string>): ColumnDef<Product>[] { ... }
-
-// widget에서 사용
-const categoryMap = useCategoryMap()
-const columns = useMemo(() => createProductColumns(categoryMap), [categoryMap])
-```
-
-**Why**: 단방향 의존성이 깨지면 순환 참조가 발생하고, 독립적인 테스트와 리팩토링이 불가능해진다. entity 간 type import도 금지하여 의존성을 완전히 차단한다.
-
----
-
----
-
-## PS-03 Entity Slice 파일 구성 (🚫 MUST)
+## PS-03 Entity Slice 파일 고정명 (🚫 MUST)
 
 **적용 위치**: `entities/*/`
 
-**규칙**: 각 entity는 아래 고정된 파일명으로 구성한다.
+**규칙**: 각 entity는 아래 고정된 **technical-role 파일명**으로 구성한다.
 
 | 파일 | 역할 | 필수 |
 |------|------|------|
@@ -121,17 +22,21 @@ const columns = useMemo(() => createProductColumns(categoryMap), [categoryMap])
 | `schema.ts` | Zod 스키마 + FormValues 타입 | 폼이 있을 때 |
 | `columns.tsx` | TanStack Table 컬럼 정의 | 테이블이 있을 때 |
 
-> `queries.ts`에는 queryOptions factory + key factory를 통합. `hooks.ts`에는 mutation 훅만. DF-01 참조.
+> **⚠️ FSD skill override (의도적)**: 공식 FSD 2.1은 `types.ts`/`api.ts` 같은 **technical-role file names를 안티패턴으로 규정**하고 도메인 기반 네이밍을 권고한다. 이 harness는 **AI 코드 생성 일관성을 최우선**으로 하기 위해 의도적으로 override한다. 이유: 모든 entity가 동일한 파일명 구조를 가져야 새 entity 추가 시 AI가 일관되게 파일 생성 가능. 두 skill이 같은 프로젝트에 설치되면 이 규칙이 FSD의 domain-based naming을 덮는다.
+
+**Default**: 위 7개 고정명. queryOptions factory + key factory는 단일 파일 `queries.ts`에 통합 (DF-01).
+
+**Override policy** (Q4-B): 사용자가 다른 파일명 요청 시 경고 후 진행. 단, 같은 entity 내에서는 일관성 유지.
 
 **Do**:
 
 ```
 entities/{entity-name}/
 ├── api.ts
+├── queries.ts
 ├── hooks.ts
 ├── types.ts
 ├── schema.ts
-├── query-keys.ts
 ├── columns.tsx
 └── index.ts
 ```
@@ -143,12 +48,11 @@ entities/{entity-name}/
 ├── productApi.ts          # ❌ entity명을 파일명에 반복
 ├── useProductQuery.ts     # ❌ 훅을 개별 파일로 분리
 ├── ProductTypes.ts        # ❌ PascalCase 파일명
+├── query-keys.ts          # ❌ key를 별도 파일로 분리 — queries.ts에 통합 (DF-01)
 └── index.ts
 ```
 
-**Why**: 파일명이 고정되면 어떤 entity든 동일한 구조를 가지므로, 새 entity 추가 시 복사-수정이 단순해진다.
-
----
+**Why**: 파일명이 고정되면 어떤 entity든 동일한 구조를 가지므로, 새 entity 추가 시 복사-수정이 단순해진다. AI 일관성 ↑.
 
 ---
 
@@ -157,6 +61,10 @@ entities/{entity-name}/
 **적용 위치**: `entities/*/index.ts`, `features/*/index.ts`
 
 **규칙**: FSD entity/feature 경계에서는 `index.ts`로 public API를 정의한다. `shared/ui`와 `packages/ui`에서는 barrel을 사용하지 않고 직접 파일 경로로 import한다.
+
+**Default**: entity/feature 외부 노출은 `index.ts` barrel을 통해. 내부 직접 import 금지.
+
+**Override policy** (Q4-B): 명시적 요청 시 경고 후 진행. 단, 일관성 유지.
 
 **Do**:
 
@@ -196,87 +104,13 @@ import { productApi } from '@/entities/product/api'
 
 ---
 
----
-
-## PS-06 Widget = 조합 컴포넌트 (⚠️ SHOULD)
-
-**규칙**: Widget은 테이블 상태 + 쿼리 훅 + 다이얼로그 상태 + UI를 조합하는 단위이다. 페이지 섹션당 하나의 widget.
-
-**Do**:
-
-```tsx
-// widgets/{entity}-table.tsx
-export function ProductTable() {
-  // 1. URL 상태
-  const tableState = useTableState()
-  // 2. 데이터 페칭
-  const { data, isLoading } = useProductList({ ... })
-  // 3. 다이얼로그 상태
-  const dialog = useDialogState<Product>()
-
-  return (
-    <>
-      <DataTableToolbar ...>
-        <Button onClick={dialog.create.open}>등록</Button>
-      </DataTableToolbar>
-      <DataTable ... />
-      <DataTablePagination ... />
-      <CreateProductDialog ... />
-    </>
-  )
-}
-```
-
-**패턴**: `useTableState() → useEntityList() → useDialogState() → UI 조합`
-
-**Why**: Widget이 오케스트레이션을 담당하면, page는 thin shell을 유지하고, entity/feature는 독립적으로 남는다.
-
----
-
----
-
-## PS-07 Feature = 사용자 액션 (⚠️ SHOULD)
-
-**규칙**: Feature는 하나의 사용자 액션을 나타내며, entity + shared를 조합하여 구현한다.
-
-**Do**:
-
-```
-features/{entity}/
-├── ui/
-│   ├── Create{Entity}Dialog.tsx
-│   ├── Edit{Entity}Dialog.tsx
-│   └── {entity}-form-fields.tsx
-└── hooks/
-    ├── useCreate{Entity}Form.ts
-    └── useEdit{Entity}Form.ts
-```
-
-**Don't**:
-
-```
-features/{entity}/
-├── create-{entity}/         # ❌ nested 구조 (flat으로 통일)
-│   ├── hooks/
-│   └── ui/
-├── edit-{entity}/           # ❌ nested 구조
-│   ├── hooks/
-│   └── ui/
-
-features/{entity}/
-├── EntityManager.tsx        # ❌ 모호한 이름
-├── EntityActions.tsx         # ❌ 여러 액션 합치기
-```
-
-**Why**: 액션 단위로 분리하면 각 feature가 독립적으로 수정/삭제 가능하고, 코드 리뷰 범위가 명확해진다.
-
----
-
----
-
 ## PS-08 @workspace/ Import 스코프 (🚫 MUST)
 
 **규칙**: 모노레포 패키지는 반드시 `@workspace/` 스코프로 import한다. `@repo/`는 사용 금지.
+
+**Default**: 모노레포 internal 패키지는 `@workspace/{package-name}/...`. 앱 내부는 `@/...` (path alias).
+
+**Fallback to skill**: Turborepo skill이 `@workspace/` vs `@repo/` 선택지를 다룰 수 있음. 선택은 우리가 고정 (`@workspace/`).
 
 **Do**:
 
@@ -307,13 +141,15 @@ import { Button } from '../../../packages/ui/src/components/button'
 
 ---
 
----
-
 ## PS-12 단순 중복 > 과도한 추상화 (⚠️ SHOULD)
 
 > Cross-reference: Clean Code React — Coupling: Handling Duplicate Code
 
-**규칙**: entity별 api.ts, hooks.ts, columns.tsx 등의 구조가 비슷하더라도, 범용 추상화를 만들지 않는다. 3곳 이상에서 **정확히 동일한** 패턴이 반복될 때만 유틸리티로 추출한다.
+**규칙**: entity별 `api.ts`, `hooks.ts`, `columns.tsx` 등의 구조가 비슷하더라도, 범용 추상화를 만들지 않는다. 3곳 이상에서 **정확히 동일한** 패턴이 반복될 때만 유틸리티로 추출한다.
+
+**Default**: 같은 모양의 코드가 2~3개 entity에 반복되어도 그대로 둔다. 추출 trigger는 "3곳 이상 + 정확히 동일 + 10줄 이상".
+
+**Why this choice**: 과도한 추상화는 설정 파라미터가 증가하고, 한 곳의 변경이 모든 entity에 영향을 미친다. entity별 독립적 코드는 수정 범위가 명확하고 이해하기 쉽다.
 
 **Do**:
 
@@ -351,5 +187,3 @@ const productApi = createEntityApi<Product>({ basePath: '/product', searchField:
 | 2-3줄의 비슷한 코드 | 그대로 둔다 |
 | 3곳 이상에서 **동일한** 10줄+ 로직 | 유틸리티로 추출 |
 | 비슷하지만 **미묘하게 다른** 코드 | 그대로 둔다 (통합 시 if/else 증가) |
-
-**Why**: 과도한 추상화는 설정 파라미터가 증가하고, 한 곳의 변경이 모든 entity에 영향을 미친다. entity별 독립적 코드는 수정 범위가 명확하고 이해하기 쉽다.
