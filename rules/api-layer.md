@@ -1,6 +1,6 @@
 # API Layer
 
-API 함수 구조, 응답 타입, SSR prefetch 규칙. `entities/*/api.ts` 파일의 구조.
+API 함수 구조, 응답 타입, SSR prefetch 규칙. `entities/*/api/{entity}.ts` 파일의 구조.
 
 > Cross-reference: [Next.js App Router](https://nextjs.org/docs/app), TanStack Query BP (`ssr-dehydration`)
 >
@@ -10,9 +10,9 @@ API 함수 구조, 응답 타입, SSR prefetch 규칙. `entities/*/api.ts` 파�
 
 ## DF-08 API 객체 구조 (🚫 MUST)
 
-**적용 위치**: `entities/*/api.ts`
+**적용 위치**: `entities/*/api/{entity}.ts`
 
-**규칙**: 각 entity의 `api.ts`는 메서드를 가진 객체를 export한다. 쿼리 파라미터는 `URLSearchParams`로 빌드한다. 메서드명은 표준을 따른다.
+**규칙**: 각 entity의 `api/{entity}.ts`는 메서드를 가진 객체를 export한다. 쿼리 파라미터는 `URLSearchParams`로 빌드한다. 메서드명은 표준을 따른다.
 
 **표준 메서드명**:
 
@@ -29,7 +29,7 @@ API 함수 구조, 응답 타입, SSR prefetch 규칙. `entities/*/api.ts` 파�
 **Do**:
 
 ```ts
-// entities/{entity}/api.ts
+// entities/{entity}/api/{entity}.ts
 export const productApi = {
   getList: (params: ProductListParams) => {
     const query = new URLSearchParams()

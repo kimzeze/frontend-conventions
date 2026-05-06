@@ -1,27 +1,32 @@
 # Frontend Conventions Index
 
-> AI 에이전트가 참조하는 73개 규칙의 요약 + 상세 파일 링크.
+> AI 에이전트가 참조하는 72개 규칙의 요약 + 상세 파일 링크.
 
 ## Entity 구조 템플릿
 
-새 entity를 만들 때 아래 구조 (PS-03):
+새 entity를 만들 때 아래 구조 (FSD v2.1 정합 — `feature-sliced-design` skill 준수):
 
 ```
 entities/{entity-name}/
-├── api.ts           # API 함수 (DF-08)
-├── queries.ts       # queryOptions factory + key factory (DF-01)
-├── hooks.ts         # Mutation 훅 (useApiMutation, DF-07)
-├── types.ts         # 도메인 타입
-├── schema.ts        # Zod 스키마 + FormValues (폼이 있을 때, FM-01)
-├── columns.tsx      # 테이블 컬럼 정의 (테이블이 있을 때, TB-02)
-└── index.ts         # Barrel export (PS-05)
+├── api/
+│   ├── {entity}.ts            # API 함수 (DF-08)
+│   ├── {entity}-queries.ts    # queryOptions factory + key factory (DF-01)
+│   └── {entity}-mutations.ts  # Mutation 훅 (useApiMutation, DF-07)
+├── model/
+│   ├── {entity}.ts            # 도메인 타입
+│   └── {entity}-form.ts       # Zod 스키마 + FormValues (폼이 있을 때, FM-01)
+├── ui/
+│   └── {entity}-columns.tsx   # 테이블 컬럼 정의 (테이블이 있을 때, TB-02)
+└── index.ts                   # Barrel export (PS-05)
 ```
+
+> **이 템플릿의 근거**: FSD v2.1 Rule 4-4 (도메인 기반 파일명) + Section 8 (표준 세그먼트 `ui/`, `model/`, `api/`, `lib/`, `config/`). technical-role 파일명(`api.ts`, `hooks.ts`, `types.ts`)은 안티패턴.
 
 ## 작업별 참조 가이드
 
 | 작업 | 읽어야 할 규칙 파일 |
 |------|---------------------|
-| 새 entity 추가 | architecture (PS-03) → api-layer → queries → mutations → naming |
+| 새 entity 추가 | `feature-sliced-design` skill → api-layer → queries → mutations → naming |
 | CRUD 폼 구현 | library-choices (LIB-01) → forms → mutations |
 | 테이블 페이지 | library-choices (LIB-03, LIB-04) → tables → state-management → queries |
 | 새 페이지/라우트 | nextjs-patterns → architecture (PS-05) |
@@ -49,16 +54,15 @@ entities/{entity-name}/
 
 ### Architecture — [rules/architecture.md](rules/architecture.md)
 
-> FSD 일반(레이어/import/slice/widget/feature 정의)은 [`feature-sliced-design`](https://skills.sh/feature-sliced/skills/feature-sliced-design) skill에 전적 위임. 이 카테고리는 그 위에 우리 harness가 추가 고정한 컨벤션.
+> FSD 일반(레이어/import/slice/widget/feature 정의, **entity slice 파일 구성**)은 [`feature-sliced-design`](https://skills.sh/feature-sliced/skills/feature-sliced-design) skill에 전적 위임. 이 카테고리는 그 위에 우리 harness가 추가 고정한 컨벤션.
 
 | ID | 규칙 | 엄격도 |
 |----|------|--------|
-| PS-03 | Entity slice 파일 고정명 (FSD 안티패턴 의도적 override) | 🚫 MUST |
 | PS-05 | Barrel export 패턴 (FSD 경계에서만) | 🚫 MUST |
 | PS-08 | @workspace/ import 스코프 | 🚫 MUST |
 | PS-12 | 단순 중복 > 과도한 추상화 | ⚠️ SHOULD |
 
-> **삭제됨** (`feature-sliced-design` skill 위임): PS-01 (FSD 5 layers), PS-02 (import 하향 방향), PS-06 (widget 정의), PS-07 (feature 정의).
+> **삭제됨** (`feature-sliced-design` skill 위임): PS-01 (FSD 5 layers), PS-02 (import 하향 방향), **PS-03 (entity slice 파일 구성 — v2.0.0에서 제거, FSD 도메인 기반 네이밍 따름)**, PS-06 (widget 정의), PS-07 (feature 정의).
 
 ### Next.js Patterns — [rules/nextjs-patterns.md](rules/nextjs-patterns.md)
 
@@ -84,7 +88,7 @@ TanStack Query v5 읽기 쿼리.
 
 | ID | 규칙 | 엄격도 |
 |----|------|--------|
-| DF-01 | queryOptions factory (queries.ts 통합) | 🚫 MUST |
+| DF-01 | queryOptions factory (api/{entity}-queries.ts) | 🚫 MUST |
 | DF-02 | Query key에 모든 의존성 포함 | 🚫 MUST |
 | DF-03 | useQuery 훅 구조 (keepPreviousData) | ⚠️ SHOULD |
 | DF-04 | placeholderData vs initialData 구분 | ⚠️ SHOULD |
@@ -115,7 +119,7 @@ TanStack Query v5 읽기 쿼리.
 
 | ID | 규칙 | 엄격도 |
 |----|------|--------|
-| FM-01 | Zod 스키마는 schema.ts에 위치 | 🚫 MUST |
+| FM-01 | Zod 스키마는 model/{entity}-form.ts에 위치 | 🚫 MUST |
 | FM-02 | FormValues = z.infer 타입 추출 | 🚫 MUST |
 | FM-03 | useForm + zodResolver 패턴 | 🚫 MUST |
 | FM-04 | FormDialog 컴포넌트 사용 | ⚠️ SHOULD |
@@ -166,7 +170,7 @@ TanStack Query v5 읽기 쿼리.
 
 | ID | 규칙 | 엄격도 |
 |----|------|--------|
-| NM-01 | 파일명: kebab-case + entity 고정명 | 🚫 MUST |
+| NM-01 | 파일명: 도메인 기반 kebab-case (FSD Rule 4-4 정합) | 🚫 MUST |
 | NM-02 | Hook: use{Entity}{Operation} | 🚫 MUST |
 | NM-03 | 타입: {Entity}, Create{Entity}Input | 🚫 MUST |
 | NM-04 | 상수: UPPER_SNAKE_CASE + {ENTITY}\_{FIELD} 접두사 | ⚠️ SHOULD |
@@ -181,15 +185,15 @@ TanStack Query v5 읽기 쿼리.
 
 | 항목 | 수 |
 |------|-----|
-| 총 규칙 수 | **73** |
-| 🚫 MUST | **31** |
+| 총 규칙 수 | **72** |
+| 🚫 MUST | **30** |
 | ⚠️ SHOULD | **33** |
 | ✅ MAY | **9** |
 | 규칙 파일 | **12** |
 
 ## Cross-reference 출처
 
-- [feature-sliced-design skill](https://skills.sh/feature-sliced/skills/feature-sliced-design) — 아키텍처 위임
+- [feature-sliced-design skill](https://skills.sh/feature-sliced/skills/feature-sliced-design) — 아키텍처 + entity slice 파일명 위임
 - [Vercel React Best Practices](https://vercel.com/blog/react-best-practices) — bundle, rendering, re-render 최적화
 - [TanStack Query Best Practices](https://tanstack.com/query/latest/docs) — query key, caching, mutation 패턴
 - [TkDodo — Working with Zustand](https://tkdodo.eu/blog/working-with-zustand) — Zustand BP

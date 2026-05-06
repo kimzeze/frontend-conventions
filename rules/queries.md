@@ -11,23 +11,23 @@ TanStack Query v5 기반 **읽기 쿼리** 규칙. queryOptions factory, query k
 - **별도 백엔드(Django) API 서버** — DB에서 Server Action으로 직접 가져오는 경우는 없음
 - **SSR/CSR 혼용** 가능 — SSR prefetch는 필요하면 즉시 사용 가능하지만, 현재는 client-side TanStack Query + clientFetch 중심
 - **mutation은 useApiMutation으로 통일** — Server Action 미사용 (mutations.md DF-07 참조)
-- **queryOptions factory** — key + fn + staleTime을 `queries.ts`에서 통합 관리
+- **queryOptions factory** — key + fn + staleTime을 `api/{entity}-queries.ts`에서 통합 관리
 
 ---
 
 ## DF-01 queryOptions Factory (🚫 MUST)
 
-**적용 위치**: `entities/*/queries.ts`
+**적용 위치**: `entities/*/api/{entity}-queries.ts`
 
-**규칙**: 모든 entity는 `queries.ts`에 key factory + queryOptions factory를 export한다. key, queryFn, staleTime을 한 곳에서 관리한다.
+**규칙**: 모든 entity는 `api/{entity}-queries.ts`에 key factory + queryOptions factory를 export한다. key, queryFn, staleTime을 한 곳에서 관리한다.
 
 **Do**:
 
 ```ts
-// entities/{entity}/queries.ts
+// entities/{entity}/api/{entity}-queries.ts
 import { queryOptions, keepPreviousData } from '@tanstack/react-query'
-import { productApi } from './api'
-import type { ProductListParams } from './types'
+import { productApi } from './product'
+import type { ProductListParams } from '../model/product'
 
 // Key factory — invalidation에 사용
 export const productKeys = {

@@ -3,7 +3,7 @@
 > **Next.js 16 + React 19 + TanStack Query v5 + FSD** 기반 개인 프론트엔드 harness.
 > 다른 BP skill들이 보여주는 여러 방향 중 **사용자가 선택한 한 방향만 고정**하여 AI 코드 생성·리뷰 일관성을 보장하는 **Claude Code skill**.
 
-[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](./CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-skill-purple.svg)](https://code.claude.com/docs/en/skills)
 
@@ -11,7 +11,7 @@
 
 - 🎯 **"BP 따르라"는 모호한 지시를 한 방향 결정으로 변환** — Best Practice에도 여러 valid 방향이 있는데, 그중 하나만 고정
 - 🤖 **AI 세션 간 동일한 코드 스타일** — 누가 쓰든, 어떤 세션이든 같은 결과
-- 📐 **73개 규칙, 12개 영역** — Library Choices, FSD 보완, TanStack Query, Forms, Tables, State, Naming 등
+- 📐 **72개 규칙, 12개 영역** — Library Choices, FSD 보완, TanStack Query, Forms, Tables, State, Naming 등
 - 🚫/⚠️/✅ **3단계 경계** — MUST / SHOULD / MAY로 엄격도 명시
 - 🔒 **Override Policy 명문화** — 사용자 명시 요청 시 경고 후 진행
 
@@ -20,8 +20,8 @@
 | 이 skill의 역할 | 위임 또는 보완 |
 |---|---|
 | **Library Choices** lock-in (LIB-01~06) | 단독 — 라이브러리 선택은 우리만 결정 |
-| **TanStack Query 패턴 강제** | `tanstack-query-best-practices` 위에 우리 선택 (queries.ts 위치, useApiMutation 래퍼 등) |
-| **FSD 아키텍처** | **`feature-sliced-design` skill에 전적 위임** — entity slice 파일 고정명만 override |
+| **TanStack Query 패턴 강제** | `tanstack-query-best-practices` 위에 우리 선택 (queryOptions factory 위치, useApiMutation 래퍼 등) |
+| **FSD 아키텍처** | **`feature-sliced-design` skill에 전적 위임** (v2.0.0부터 entity 파일 구성 포함) |
 | **Next.js 패턴** | `next-best-practices` 위에 우리 선택 (page thin shell 등) |
 | **React 성능 최적화** | `vercel-react-best-practices` 위에 우리 선택 |
 
@@ -52,7 +52,7 @@ npx skills add vercel-react-best-practices     # React 성능
 "frontend-conventions를 따라 새 product entity를 만들어줘"
 ```
 
-→ Library Choices(LIB-01~06) + entity 파일 고정명(PS-03) + 4-카테고리 상태(SM-01) + 폼 패턴(FM-03) 등 자동 적용.
+→ Library Choices(LIB-01~06) + entity 세그먼트 구조(`feature-sliced-design` skill) + 4-카테고리 상태(SM-01) + 폼 패턴(FM-03) 등 자동 적용.
 
 ### 2. 프로젝트 검증
 
@@ -80,12 +80,12 @@ npx skills add vercel-react-best-practices     # React 성능
 frontend-conventions/
 ├── README.md           ← 이 파일 (공개 진입점)
 ├── SKILL.md            ← Claude Code skill 진입점 (canonical)
-├── INDEX.md            ← 73개 규칙 전체 인덱스
-├── DECISIONS.md        ← ADR 형식 설계 결정 (19 ADRs + Open Questions)
+├── INDEX.md            ← 72개 규칙 전체 인덱스
+├── DECISIONS.md        ← ADR 형식 설계 결정 (21 ADRs + Open Questions)
 ├── CHANGELOG.md        ← 버전별 변경사항
 └── rules/              ← 12개 카테고리별 규칙
-    ├── library-choices.md     ⭐ NEW (LIB-01~06)
-    ├── architecture.md        (FSD skill 위임 후 PS-03,05,08,12만)
+    ├── library-choices.md     (LIB-01~06)
+    ├── architecture.md        (FSD skill 위임 후 PS-05, PS-08, PS-12만)
     ├── nextjs-patterns.md
     ├── code-quality.md
     ├── queries.md
@@ -140,7 +140,8 @@ frontend-conventions/
 
 ## Version
 
-- **v1.1.0** (현재) — Library Choices 카테고리 신설, Zustand BP 추가, FSD 위임, Override Policy 명문화
+- **v2.0.0** (현재) — PS-03 제거 (FSD v2.1 도메인 기반 네이밍 채택), entity 파일 구성을 `feature-sliced-design` skill에 완전 위임
+- v1.1.0 — Library Choices 카테고리 신설, Zustand BP 추가, FSD 위임 시작, Override Policy 명문화
 - v1.0.0 — 초기 release (67 rules, 11 categories)
 
 ## License

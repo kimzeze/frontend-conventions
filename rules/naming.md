@@ -8,12 +8,12 @@
 
 ## NM-01 파일명 규칙 (🚫 MUST)
 
-**규칙**: 일반 파일은 kebab-case, entity 폴더 내 파일은 고정명.
+**규칙**: 모든 파일은 **도메인 기반 kebab-case**. FSD v2.1 Rule 4-4 정합 — technical-role 파일명(`api.ts`, `hooks.ts`, `types.ts`, `utils.ts`) 금지. 기술적 역할은 **세그먼트 폴더**(`api/`, `model/`, `ui/`, `lib/`)로 표현하고, 파일명은 그 안의 도메인을 나타낸다.
 
 | 위치 | 규칙 | 예시 |
 |------|------|------|
-| entity 내부 | 고정명 | `api.ts`, `queries.ts`, `hooks.ts`, `types.ts`, `schema.ts`, `columns.tsx`, `index.ts` |
-| shared/lib | kebab-case | `use-table-state.ts`, `table-utils.ts` |
+| entities 내부 | 세그먼트 + 도메인 기반 | `api/product.ts`, `api/product-queries.ts`, `api/product-mutations.ts`, `model/product.ts`, `model/product-form.ts`, `ui/product-columns.tsx` |
+| shared/lib | kebab-case | `use-table-state.ts`, `table-utils.ts`, `format-date.ts` |
 | shared/ui | kebab-case | `data-table.tsx`, `sortable-header.tsx`, `form-dialog.tsx` |
 | features/ui (다이얼로그) | PascalCase | `Create{Entity}Dialog.tsx`, `Edit{Entity}Dialog.tsx` |
 | features/ui (sub) | kebab-case | `{entity}-form-fields.tsx` |
@@ -22,6 +22,12 @@
 **Don't**:
 
 ```
+// ❌ technical-role 파일명 (FSD Rule 4-4 위반)
+entities/product/api.ts
+entities/product/hooks.ts
+entities/product/types.ts
+entities/product/utils.ts
+
 // ❌ entity명을 파일명에 반복
 entities/product/productApi.ts
 
@@ -32,7 +38,9 @@ entities/product/ProductTypes.ts
 entities/product/product_hooks.ts
 ```
 
-**Why**: 일관된 파일명은 어떤 entity든 동일한 구조를 보장한다.
+**예외**: 동사+도메인 형태(`api/fetch-profile.ts`, `lib/format-department.ts`)는 OK. FSD 가이드에서 명시적으로 허용.
+
+**Why**: 도메인 기반 파일명은 한 파일에 단일 도메인 관심사를 모은다. technical-role 파일명은 여러 도메인을 한 파일에 섞어 응집도를 떨어뜨림 (예: `types.ts`에 User/Order/Product 타입 혼재). 세그먼트 폴더가 기술적 역할을 표현하므로 파일명이 중복할 필요 없음.
 
 ---
 
@@ -191,28 +199,28 @@ function Product() { ... }         // ❌ 컴포넌트인지 타입인지 불명
 
 ```ts
 // type-only import — 런타임 번들에 포함되지 않음
-import type { Product, ProductListParams } from './types'
+import type { Product, ProductListParams } from '../model/product'
 import type { ColumnDef } from '@tanstack/react-table'
 import type { Control } from 'react-hook-form'
 
 // type-only export
-export type { Product, CreateProductInput } from './types'
+export type { Product, CreateProductInput } from './model/product'
 
 // 값과 타입을 함께 import할 때
-import { productApi } from './api'
-import type { Product } from './types'
+import { productApi } from './product'
+import type { Product } from '../model/product'
 ```
 
 **Don't**:
 
 ```ts
 // ❌ 값 import로 타입 가져오기 (tree-shaking에 불리)
-import { Product } from './types'  // Product가 type-only라면 import type 사용
+import { Product } from '../model/product'  // Product가 type-only라면 import type 사용
 
 // ❌ 혼합 import에서 타입을 구분하지 않음
-import { productApi, Product, ProductListParams } from './api'
-// → import { productApi } from './api'
-// → import type { Product, ProductListParams } from './types'
+import { productApi, Product, ProductListParams } from './product'
+// → import { productApi } from './product'
+// → import type { Product, ProductListParams } from '../model/product'
 ```
 
 **Why**: `import type`은 컴파일 시 완전히 제거되어 런타임 번들에 포함되지 않는다. 의도를 명확히 하고 tree-shaking을 돕는다.

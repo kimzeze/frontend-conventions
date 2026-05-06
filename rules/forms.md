@@ -8,14 +8,14 @@ zod + react-hook-form + shadcn Form 기반 폼 처리 규칙. 라이브러리 �
 
 ## FM-01 Zod 스키마 위치와 구조 (🚫 MUST)
 
-**적용 위치**: `entities/*/schema.ts`
+**적용 위치**: `entities/*/model/{entity}-form.ts`
 
-**규칙**: Zod 스키마는 `entities/{entity}/schema.ts`에 정의한다. 한 파일에 해당 entity의 모든 스키마를 모은다.
+**규칙**: Zod 스키마는 `entities/{entity}/model/{entity}-form.ts`에 정의한다. 한 파일에 해당 entity의 모든 폼 스키마를 모은다.
 
 **Do**:
 
 ```ts
-// entities/{entity}/schema.ts
+// entities/{entity}/model/{entity}-form.ts
 import { z } from 'zod'
 
 export const createProductSchema = z.object({
