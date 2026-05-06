@@ -57,24 +57,27 @@ FSD 5레이어 채택: `app` → `widgets` → `features` → `entities` → `sh
 
 ## ADR-002: Entity 파일 구성 고정
 
-**Status**: Accepted (v1.0.0)
+**Status**: ❌ **Superseded by [ADR-021](#adr-021-ps-03-제거--fsd-도메인-기반-네이밍-채택)** (v2.0.0). 원본 결정은 v1.0.0 ~ v1.1.0 동안 유효.
 
 **Context**
 Entity마다 파일명과 구조가 다르면 AI가 패턴 학습 불가. 새 entity 추가 시 개발자마다 다른 구조 생성.
 
-**Decision**
+**Decision (Superseded)**
 각 entity는 고정된 7개 파일로 구성: `api.ts`, `queries.ts`, `hooks.ts`, `types.ts`, `schema.ts`(폼 있을 때), `columns.tsx`(테이블 있을 때), `index.ts`.
 
-**Consequences**
+**Consequences (재평가)**
 - ✓ 한 entity를 다른 entity로 복사-수정이 가능 (AI 친화적)
 - ✓ barrel export(`index.ts`)로 외부 API 정의
 - ✗ 파일 수가 적은 entity도 항상 5-7개 파일 유지 필요
+- ✗ **(v2.0.0 발견)** FSD v2.1 Rule 4-4 (도메인 기반 네이밍)와 정면 충돌. `types.ts` 같은 technical-role 파일명에 여러 도메인 혼재 시 응집도 저하
 
-**Alternatives considered**
+**Why superseded**: dashboard 앱에서 FSD v2.1 가이드를 적용해본 결과, 세그먼트 + 도메인 기반 구조가 더 명확한 응집도를 제공한다. AI 일관성은 INDEX.md 템플릿과 SKILL.md Quick Start로 충분히 확보 가능. ADR-020 참조.
+
+**Alternatives considered (당시)**
 - **단일 파일**: 작은 entity에 유리하지만 파일이 커지면 분리 필요
 - **자유 구조**: AI 일관성 확보 불가
 
-**Related**: [PS-03, PS-05](./rules/architecture.md)
+**Related**: ~~[PS-03 — 삭제됨]~~, [PS-05](./rules/architecture.md), [ADR-021](#adr-021-ps-03-제거--fsd-도메인-기반-네이밍-채택)
 
 ---
 
@@ -577,6 +580,72 @@ v1.0.0 운영하면서 두 가지 문제 발견:
 
 **Supersedes (partial)**:
 - ADR-001 (FSD 5 layers 채택) — FSD skill에 위임. 우리는 더 이상 layer 수 강제하지 않음.
+
+---
+
+## ADR-021: PS-03 제거 — FSD 도메인 기반 네이밍 채택
+
+**Status**: Accepted (v2.0.0, 2026-05-06)
+
+**Supersedes**: [ADR-002](#adr-002-entity-파일-구성-고정) (v1.0.0 ~ v1.1.0)
+
+**Context**
+
+ADR-002 (v1.0.0)는 entity의 파일을 `api.ts`, `queries.ts`, `hooks.ts`, `types.ts`, `schema.ts`, `columns.tsx`, `index.ts`의 7개 고정 평탄 파일명으로 강제했다. ADR-020 (v1.1.0)은 이를 *"FSD 안티패턴 의도적 override"*로 명문화하여 유지했다.
+
+그러나 실제 dashboard 앱(`apps/dashboard`)에 FSD v2.1 가이드를 적용해본 결과 다음 문제가 명확해졌다:
+
+1. **응집도 저하**: `types.ts`에 Student, Assessment, Department, Assessee 등 여러 도메인 타입이 한 파일에 혼재 — 추가될수록 파일이 비대해지고 도메인 경계 흐려짐.
+2. **technical-role 안티패턴의 본질**: FSD v2.1 Rule 4-4가 *"Technical-role names like `types.ts`, `utils.ts`, `helpers.ts` mix unrelated domains in a single file and reduce cohesion"*라고 명시한 정확한 이유가 실제 코드에서 재현됨.
+3. **AI 일관성 가설 재검증**: "고정 파일명 → AI 친화적"의 전제는 INDEX.md의 Entity 구조 템플릿 + SKILL.md Quick Start로도 동일 효과 달성 가능. 파일명 강제까지 필요 없음.
+4. **다른 skill과의 일관성**: `feature-sliced-design` skill에 모든 FSD 결정을 위임하는 v1.1.0 정책과 PS-03만 예외로 두는 게 부자연스러움.
+
+**Decision**
+
+1. **PS-03 (Entity slice 파일 고정명) 규칙 삭제**. entity 파일 구성은 `feature-sliced-design` skill에 완전 위임.
+2. **표준 권장 구조** (INDEX.md "Entity 구조 템플릿"):
+
+   ```
+   entities/{entity-name}/
+   ├── api/
+   │   ├── {entity}.ts            # API 함수 (DF-08)
+   │   ├── {entity}-queries.ts    # queryOptions factory (DF-01)
+   │   └── {entity}-mutations.ts  # Mutation 훅 (DF-07)
+   ├── model/
+   │   ├── {entity}.ts            # 도메인 타입
+   │   └── {entity}-form.ts       # Zod 스키마 (FM-01)
+   ├── ui/
+   │   └── {entity}-columns.tsx   # 테이블 컬럼 (TB-02)
+   └── index.ts                   # Barrel export (PS-05)
+   ```
+
+3. **NM-01 갱신**: 모든 파일명을 도메인 기반 kebab-case로. technical-role 파일명(`api.ts`, `hooks.ts`, `types.ts`, `utils.ts`) 명시적 금지.
+4. **다른 규칙의 적용 위치 경로 갱신**: DF-01, DF-06, DF-07, DF-08, FM-01, TB-02, PS-11 등.
+
+**Consequences**
+
+- ✓ FSD v2.1 Rule 4-4와 정합 — `feature-sliced-design` skill의 "Technical-role naming ban"과 일치
+- ✓ entity 내부에서도 도메인별 파일 분리 가능 (예: `model/student.ts`, `model/assessment.ts`)
+- ✓ ADR-020의 "FSD 결정은 모두 위임" 정책과 일관성 회복
+- ✓ AI 일관성은 Entity 구조 템플릿 + Quick Start로 유지
+- ✗ v1.x 코드는 마이그레이션 필요 (평탄 파일 → 세그먼트 + 도메인 기반)
+- ✗ entity 파일 수가 늘어남 (1 entity = 평균 5~7 파일 → 5~9 파일)
+
+**Why now**
+
+dashboard에서 검증된 v2 구조가 잘 작동함을 코드 + typecheck + 동작으로 확인했다 ([PR #160 — refactor(dashboard): FSD v2.1 아키텍처 정합성 리팩토링](https://github.com/aptimizer-co/frontend-aptimizer/pull/160)). v1.1.0의 PS-03 유지 결정은 v1.0.0 패턴을 보존하려는 보수적 결정이었고, 이제 검증을 거쳐 변경할 수 있다.
+
+**Alternatives considered**
+
+- **PS-03을 SHOULD로 약화**: 부분 적용 시 일관성 깨짐. 삭제가 깔끔.
+- **PS-03 유지 + dashboard만 예외**: ADR-020 위임 정책과 모순.
+- **PS-03 재정의**: FSD 정합 구조를 컨벤션에 다시 명시 — feature-sliced-design skill에 이미 정의되어 있으므로 중복.
+
+**Related**:
+- [feature-sliced-design skill](https://skills.sh/feature-sliced/skills/feature-sliced-design) Rule 4-4, Section 8
+- [ADR-002 (Superseded)](#adr-002-entity-파일-구성-고정)
+- [PR #160 frontend-aptimizer/dashboard FSD 정합 리팩토링](https://github.com/aptimizer-co/frontend-aptimizer/pull/160)
+- [INDEX.md Entity 구조 템플릿](./INDEX.md#entity-구조-템플릿)
 
 ---
 

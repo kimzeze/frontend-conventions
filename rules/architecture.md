@@ -1,58 +1,10 @@
 # Architecture
 
-> **FSD 위임**: FSD 레이어 구조, import 방향, slice 정의, widget/feature 정의는 공식 [`feature-sliced-design`](https://skills.sh/feature-sliced/skills/feature-sliced-design) skill에 **전적 위임**한다. 이 파일은 그 위에 우리 harness가 추가로 고정한 컨벤션만 다룬다.
+> **FSD 위임**: FSD 레이어 구조, import 방향, slice 정의, widget/feature 정의, **entity slice 파일 구성**은 공식 [`feature-sliced-design`](https://skills.sh/feature-sliced/skills/feature-sliced-design) skill에 **전적 위임**한다. 이 파일은 그 위에 우리 harness가 추가로 고정한 컨벤션만 다룬다.
 >
-> **삭제된 규칙**: PS-01 (FSD 레이어 구조), PS-02 (import 하향 방향), PS-06 (widget = 조합), PS-07 (feature = 사용자 액션) — 모두 `feature-sliced-design` skill에서 다룸.
-
----
-
-## PS-03 Entity Slice 파일 고정명 (🚫 MUST)
-
-**적용 위치**: `entities/*/`
-
-**규칙**: 각 entity는 아래 고정된 **technical-role 파일명**으로 구성한다.
-
-| 파일 | 역할 | 필수 |
-|------|------|------|
-| `types.ts` | 도메인 타입 (API 응답 shape) | O |
-| `api.ts` | API 함수 (clientFetch 호출) | O |
-| `queries.ts` | queryOptions factory + key factory (DF-01) | O |
-| `hooks.ts` | Mutation 훅 (useApiMutation) | O |
-| `index.ts` | Barrel re-export | O |
-| `schema.ts` | Zod 스키마 + FormValues 타입 | 폼이 있을 때 |
-| `columns.tsx` | TanStack Table 컬럼 정의 | 테이블이 있을 때 |
-
-> **⚠️ FSD skill override (의도적)**: 공식 FSD 2.1은 `types.ts`/`api.ts` 같은 **technical-role file names를 안티패턴으로 규정**하고 도메인 기반 네이밍을 권고한다. 이 harness는 **AI 코드 생성 일관성을 최우선**으로 하기 위해 의도적으로 override한다. 이유: 모든 entity가 동일한 파일명 구조를 가져야 새 entity 추가 시 AI가 일관되게 파일 생성 가능. 두 skill이 같은 프로젝트에 설치되면 이 규칙이 FSD의 domain-based naming을 덮는다.
-
-**Default**: 위 7개 고정명. queryOptions factory + key factory는 단일 파일 `queries.ts`에 통합 (DF-01).
-
-**Override policy** (Q4-B): 사용자가 다른 파일명 요청 시 경고 후 진행. 단, 같은 entity 내에서는 일관성 유지.
-
-**Do**:
-
-```
-entities/{entity-name}/
-├── api.ts
-├── queries.ts
-├── hooks.ts
-├── types.ts
-├── schema.ts
-├── columns.tsx
-└── index.ts
-```
-
-**Don't**:
-
-```
-entities/{entity-name}/
-├── productApi.ts          # ❌ entity명을 파일명에 반복
-├── useProductQuery.ts     # ❌ 훅을 개별 파일로 분리
-├── ProductTypes.ts        # ❌ PascalCase 파일명
-├── query-keys.ts          # ❌ key를 별도 파일로 분리 — queries.ts에 통합 (DF-01)
-└── index.ts
-```
-
-**Why**: 파일명이 고정되면 어떤 entity든 동일한 구조를 가지므로, 새 entity 추가 시 복사-수정이 단순해진다. AI 일관성 ↑.
+> **삭제된 규칙**:
+> - PS-01 (FSD 레이어 구조), PS-02 (import 하향 방향), PS-06 (widget = 조합), PS-07 (feature = 사용자 액션) — `feature-sliced-design` skill에서 다룸 (v1.1.0).
+> - **PS-03 (entity slice 파일 고정명) — v2.0.0에서 제거**. 기존에는 `api.ts`/`hooks.ts`/`types.ts` 같은 technical-role 파일명을 의도적으로 강제했으나, FSD v2.1 Rule 4-4(도메인 기반 네이밍)와의 정합을 우선하기로 결정 ([ADR-002 Superseded by ADR-021](../DECISIONS.md#adr-021-ps-03-제거--fsd-도메인-기반-네이밍-채택)).
 
 ---
 
@@ -70,11 +22,15 @@ entities/{entity-name}/
 
 ```ts
 // entities/{entity}/index.ts — entity의 public API 정의
-export { productApi } from './api'
-export { productKeys, productQueries } from './queries'
-export { useCreateProduct, useUpdateProduct, useDeleteProduct } from './hooks'
-export { productColumns } from './columns'
-export type { Product, ProductListParams, CreateProductInput } from './types'
+export { productApi } from './api/product'
+export { productKeys, productQueries } from './api/product-queries'
+export {
+  useCreateProduct,
+  useUpdateProduct,
+  useDeleteProduct,
+} from './api/product-mutations'
+export { productColumns } from './ui/product-columns'
+export type { Product, ProductListParams, CreateProductInput } from './model/product'
 ```
 
 ```ts
@@ -95,7 +51,7 @@ import { Button } from '@workspace/ui/components/button'
 import { DataTable, SortableHeader } from '@/shared/ui'
 
 // ❌ entity 내부 파일에 직접 접근 (barrel 우회)
-import { productApi } from '@/entities/product/api'
+import { productApi } from '@/entities/product/api/product'
 ```
 
 > **Note**: Vercel `bundle-barrel-imports` 규칙과의 충돌 — FSD 캡슐화가 우선. Next.js `optimizePackageImports` 옵션과 tree-shaking으로 완화. 상세 근거는 [ADR-004](../DECISIONS.md) 참조.
@@ -145,7 +101,7 @@ import { Button } from '../../../packages/ui/src/components/button'
 
 > Cross-reference: Clean Code React — Coupling: Handling Duplicate Code
 
-**규칙**: entity별 `api.ts`, `hooks.ts`, `columns.tsx` 등의 구조가 비슷하더라도, 범용 추상화를 만들지 않는다. 3곳 이상에서 **정확히 동일한** 패턴이 반복될 때만 유틸리티로 추출한다.
+**규칙**: entity별 `api/`, `model/`, `ui/` 세그먼트 구조가 비슷하더라도, 범용 추상화를 만들지 않는다. 3곳 이상에서 **정확히 동일한** 패턴이 반복될 때만 유틸리티로 추출한다.
 
 **Default**: 같은 모양의 코드가 2~3개 entity에 반복되어도 그대로 둔다. 추출 trigger는 "3곳 이상 + 정확히 동일 + 10줄 이상".
 
@@ -154,12 +110,14 @@ import { Button } from '../../../packages/ui/src/components/button'
 **Do**:
 
 ```ts
-// 각 entity의 api.ts가 비슷한 구조를 반복 — 이것은 의도적 설계
+// 각 entity의 api/{entity}.ts가 비슷한 구조를 반복 — 이것은 의도적 설계
+// entities/product/api/product.ts
 export const productApi = {
   getList: (params) => { const query = new URLSearchParams(); ... return clientFetch(...) },
   create: (input) => clientFetch(...),
 }
 
+// entities/category/api/category.ts
 export const categoryApi = {
   getList: (params) => { const query = new URLSearchParams(); ... return clientFetch(...) },
   create: (input) => clientFetch(...),

@@ -3,6 +3,79 @@
 모든 주요 변경사항은 이 파일에 기록됩니다.
 이 프로젝트는 [Semantic Versioning](https://semver.org/)을 따릅니다.
 
+## [2.0.0] - 2026-05-06
+
+### 💥 Breaking Changes — FSD v2.1 정합 채택
+
+**핵심**: PS-03 (entity 평탄 파일 고정명)을 v1.1.0의 *"FSD 안티패턴 의도적 override"* 결정에서 **FSD v2.1 정합**으로 전환. entity 파일 구성을 `feature-sliced-design` skill에 완전 위임.
+
+이는 dashboard 앱(`apps/dashboard`)에 FSD v2.1 가이드를 적용해본 결과 ([PR #160](https://github.com/aptimizer-co/frontend-aptimizer/pull/160))를 토대로 한 검증된 결정. 자세한 근거는 [ADR-021](DECISIONS.md#adr-021-ps-03-제거--fsd-도메인-기반-네이밍-채택) 참조.
+
+### Removed
+
+- **PS-03 (Entity slice 파일 고정명) 규칙 삭제** — `feature-sliced-design` skill에 위임. v1.1.0의 *"FSD 안티패턴 의도적 override"* 명문 폐기.
+
+### Changed
+
+- **NM-01 재작성** — entity 내부 "고정명" 강제 폐기 → 모든 파일 도메인 기반 kebab-case (FSD Rule 4-4 정합). technical-role 파일명(`api.ts`, `hooks.ts`, `types.ts`, `utils.ts`) 명시적 금지.
+- **INDEX.md "Entity 구조 템플릿" 재작성** — 평탄 7파일 → 세그먼트(`api/`, `model/`, `ui/`) + 도메인 기반 파일명. FSD v2.1 표준 세그먼트 채택.
+- **적용 위치 경로 갱신**:
+  - DF-01: `entities/*/queries.ts` → `entities/*/api/{entity}-queries.ts`
+  - DF-06: `entities/*/hooks.ts` → `entities/*/api/{entity}-mutations.ts`
+  - DF-07: 동일
+  - DF-08: `entities/*/api.ts` → `entities/*/api/{entity}.ts`
+  - FM-01: `entities/*/schema.ts` → `entities/*/model/{entity}-form.ts`
+  - TB-02: `entities/*/columns.tsx` → `entities/*/ui/{entity}-columns.tsx`
+- **PS-11 'use client' 배치표 갱신** — entity 세그먼트 경로 기준으로 재작성 (`entities/*/api/{entity}-mutations.ts` 항상, `entities/*/model/*` 금지 등).
+- **DF-06 Why 보강** — entity/feature toast 분리의 두 번째 이유로 *"FSD Rule 4-3 cross-import 회피"* 추가. entity가 다른 entity의 query key를 import하면 같은 레이어 cross-import 발생.
+- **ADR-002 Status: Superseded** by ADR-021.
+
+### Added
+
+- **ADR-021** — PS-03 제거 + FSD 도메인 기반 네이밍 채택. dashboard 앱 검증 결과(PR #160) 기반 결정 기록.
+
+### Severity System (Updated)
+
+- 🚫 **MUST** — **30개** (1.1.0의 31개 - PS-03 1 = 30)
+- ⚠️ **SHOULD** — **33개** (변동 없음)
+- ✅ **MAY** — **9개** (변동 없음)
+- **총: 72개 규칙, 12개 카테고리** (이전 73개)
+
+### Migration from 1.1.0
+
+기존 v1.x 코드는 다음 마이그레이션이 필요:
+
+```
+# Before (v1.x — PS-03)
+entities/product/
+├── api.ts
+├── queries.ts
+├── hooks.ts
+├── types.ts
+├── schema.ts
+├── columns.tsx
+└── index.ts
+
+# After (v2.0 — FSD 정합)
+entities/product/
+├── api/
+│   ├── product.ts
+│   ├── product-queries.ts
+│   └── product-mutations.ts
+├── model/
+│   ├── product.ts
+│   └── product-form.ts (있을 때)
+├── ui/
+│   └── product-columns.tsx (있을 때)
+└── index.ts
+```
+
+**index.ts 외부 노출 인터페이스는 동일 유지** 가능하므로 외부 슬라이스 임포트 변경 불필요. 내부 파일 이동 + import 경로 갱신만 필요.
+
+DF-06 cross-import 회피 패턴 적용 시 features 레이어로 cross-domain invalidation 이동 (PR #160, PR #164 사례 참조).
+
+---
+
 ## [1.1.0] - 2026-04-27
 
 ### 🎯 Position 재정립

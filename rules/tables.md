@@ -56,14 +56,14 @@ const table = useReactTable({
 
 ## TB-02 Column 정의 패턴 (⚠️ SHOULD)
 
-**적용 위치**: `entities/*/columns.tsx`
+**적용 위치**: `entities/*/ui/{entity}-columns.tsx`
 
-**규칙**: 컬럼은 `entities/{entity}/columns.tsx`에 정의. 정렬 가능한 컬럼은 `SortableHeader`, enum은 `Badge`, 날짜는 포맷팅.
+**규칙**: 컬럼은 `entities/{entity}/ui/{entity}-columns.tsx`에 정의. 정렬 가능한 컬럼은 `SortableHeader`, enum은 `Badge`, 날짜는 포맷팅.
 
 **Do**:
 
 ```tsx
-// entities/{entity}/columns.tsx
+// entities/{entity}/ui/{entity}-columns.tsx
 export const productColumns: ColumnDef<Product>[] = [
   {
     accessorKey: 'id',

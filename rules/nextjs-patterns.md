@@ -62,12 +62,11 @@ export default function ProductsPage() {
 | `widgets/` | **항상** | hook 사용, 인터랙티브 |
 | `features/ui/` | **항상** | hook 사용, 이벤트 핸들러 |
 | `features/hooks/` | **항상** | React hook |
-| `entities/hooks.ts` | **항상** | useQuery, useApiMutation |
-| `entities/columns.tsx` | **항상** | JSX 렌더링 함수 |
-| `entities/types.ts` | **금지** | 타입 전용, 서버 호환 |
-| `entities/api.ts` | **금지** | 서버/클라이언트 양쪽에서 사용 가능 |
-| `entities/schema.ts` | **금지** | 타입/스키마 전용 |
-| `entities/queries.ts` | **금지** | 데이터 전용 |
+| `entities/*/api/{entity}-mutations.ts` | **항상** | useApiMutation |
+| `entities/*/api/{entity}-queries.ts` | **금지** | queryOptions 객체만 export, 서버 호환 |
+| `entities/*/api/{entity}.ts` | **금지** | 서버/클라이언트 양쪽에서 사용 가능 |
+| `entities/*/model/*.ts` | **금지** | 타입/스키마 전용 |
+| `entities/*/ui/{entity}-columns.tsx` | **항상** | JSX 렌더링 함수 |
 | `shared/ui/` | **인터랙티브만** | useState/onClick 사용 컴포넌트만 |
 | `shared/lib/` | **hook만** | use 접두사 파일만 |
 
@@ -78,11 +77,18 @@ export default function ProductsPage() {
 'use client'
 export function ProductTable() { ... }
 
-// entities/product/types.ts — 'use client' 없음
+// entities/product/model/product.ts — 'use client' 없음
 export type Product = { id: number; name: string; ... }
 
-// entities/product/api.ts — 'use client' 없음
+// entities/product/api/product.ts — 'use client' 없음
 export const productApi = { getList: ... }
+
+// entities/product/api/product-queries.ts — 'use client' 없음 (queryOptions만 export)
+export const productQueries = { list: (params) => queryOptions({ ... }) }
+
+// entities/product/api/product-mutations.ts — 'use client' 필수 (hook 사용)
+'use client'
+export const useCreateProduct = () => useApiMutation({ ... })
 ```
 
 **Don't**:
@@ -92,12 +98,12 @@ export const productApi = { getList: ... }
 'use client'
 export default function ProductsPage() { ... }
 
-// ❌ types.ts에 'use client' (불필요)
+// ❌ model/product.ts에 'use client' (불필요)
 'use client'
 export type Product = { ... }
 ```
 
-**Why**: `'use client'`가 없는 파일은 Server Component에서도 import 가능. types, api, schema를 서버 호환으로 유지하면 SSR prefetch(향후) 도입이 용이하다.
+**Why**: `'use client'`가 없는 파일은 Server Component에서도 import 가능. model, api 함수, queryOptions를 서버 호환으로 유지하면 SSR prefetch 도입이 용이하다. mutation hook은 React hook이므로 client 전용.
 
 ---
 

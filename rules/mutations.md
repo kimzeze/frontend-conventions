@@ -10,12 +10,14 @@ TanStack Query v5 기반 **쓰기 mutation** 규칙. invalidate, useApiMutation,
 
 ## DF-06 Mutation: invalidate + toast (🚫 MUST)
 
-**규칙**: entity hooks.ts의 mutation은 **쿼리 무효화만** 담당한다. **toast는 feature hooks에서 호출**한다 (관심사 분리).
+**적용 위치**: `entities/*/api/{entity}-mutations.ts`
+
+**규칙**: entity의 mutation hook은 **쿼리 무효화만** 담당한다 (자기 도메인 키만). **toast와 cross-domain invalidation은 feature hooks에서 호출**한다 (관심사 분리 + FSD Rule 4-3 cross-import 회피).
 
 **Do**:
 
 ```ts
-// entities/{entity}/hooks.ts — mutation + invalidation만
+// entities/{entity}/api/{entity}-mutations.ts — mutation + 자기 도메인 invalidation만
 export const useCreateProduct = () => {
   const queryClient = useQueryClient()
   return useApiMutation({
@@ -45,7 +47,7 @@ export const useCreateProductForm = () => {
 }
 ```
 
-> **Note**: TanStack Query 공식 문서는 mutation hook 안에서 invalidation + side effects를 함께 넣는 패턴을 보여준다. 우리는 **관심사 분리**를 위해 entity(invalidation) / feature(toast) 분리를 채택. 이유: 같은 mutation hook을 다른 feature에서 다른 toast로 재사용할 수 있음.
+> **Note**: TanStack Query 공식 문서는 mutation hook 안에서 invalidation + side effects를 함께 넣는 패턴을 보여준다. 우리는 **관심사 분리** + FSD cross-import 회피(Rule 4-3)를 위해 entity(자기 도메인 invalidation) / feature(toast + cross-domain invalidation) 분리를 채택. 이유: ① 같은 mutation hook을 다른 feature에서 다른 toast로 재사용 가능, ② entity가 다른 entity의 query key를 import하면 같은 레이어 cross-import 발생 (FSD 위반).
 
 **무효화 전략**:
 
@@ -86,7 +88,7 @@ onSuccess: () => {
 
 ## DF-07 useApiMutation 래퍼 사용 (🚫 MUST)
 
-**적용 위치**: `entities/*/hooks.ts`
+**적용 위치**: `entities/*/api/{entity}-mutations.ts`
 
 **규칙**: 모든 mutation은 raw `useMutation` 대신 `useApiMutation` 래퍼를 사용한다.
 

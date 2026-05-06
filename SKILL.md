@@ -1,7 +1,7 @@
 ---
 name: frontend-conventions
 description: Locks in opinionated frontend code patterns for Next.js 16 + TanStack Query v5 + FSD projects. ALWAYS invoke when writing data-fetching code (NEVER useEffect+fetch — always TanStack Query), creating forms (always react-hook-form + zod), introducing client state (Zustand for client-global only — NEVER for server data, NEVER Context for data sharing), implementing tables (TanStack Table v8 + manualPagination + nuqs URL state), or working in entities/features/widgets/app folders. Pairs with feature-sliced-design skill — defers all FSD architecture decisions there. Resolves ambiguity when multiple BP skills offer conflicting recommendations by locking in one direction.
-version: 1.1.0
+version: 2.0.0
 ---
 
 # Frontend Conventions (Personal Harness)
@@ -12,7 +12,7 @@ version: 1.1.0
 
 **우선순위**: 이 skill의 규칙이 다른 BP skill의 권고와 충돌하면 **이 skill이 우선**한다 (이 프로젝트의 의도적 선택).
 
-**예외**: FSD 아키텍처 영역(레이어 구조, import 방향, slice/widget/feature 정의)은 `feature-sliced-design` skill에 **전적 위임**. 이 skill은 그 위에 추가로 고정한 컨벤션만 다룬다.
+**예외**: FSD 아키텍처 영역(레이어 구조, import 방향, slice/widget/feature 정의, **entity 파일 구성** — v2.0.0부터)은 `feature-sliced-design` skill에 **전적 위임**. 이 skill은 그 위에 추가로 고정한 컨벤션만 다룬다.
 
 ---
 
@@ -94,7 +94,7 @@ version: 1.1.0
 
 | 작업 | 참조 순서 |
 |------|----------|
-| 새 entity 추가 | architecture (PS-03) → api-layer → queries → mutations → naming |
+| 새 entity 추가 | `feature-sliced-design` skill (entity 세그먼트 구조) → api-layer → queries → mutations → naming |
 | CRUD 폼 구현 | library-choices (LIB-01) → forms → mutations (DF-06, DF-07) |
 | 테이블 페이지 | library-choices (LIB-03, LIB-04) → tables → state-management (SM-01,02,03) → queries |
 | 새 페이지/라우트 | nextjs-patterns → architecture (PS-05) |
@@ -113,7 +113,7 @@ version: 1.1.0
 - [ ] Step 1: Tech Stack 확인 (package.json)
 - [ ] Step 2: Library Choices 확인 (LIB-01~06 위반 grep)
 - [ ] Step 3: FSD 구조 확인 → feature-sliced-design skill에 위임
-- [ ] Step 4: Entity 파일 완전성 (PS-03 — types.ts/api.ts/queries.ts/hooks.ts/index.ts)
+- [ ] Step 4: Entity 파일 구성 → `feature-sliced-design` skill에 위임 (세그먼트 + 도메인 기반 파일명, FSD Rule 4-4)
 - [ ] Step 5: Barrel export 검증 (PS-05)
 - [ ] Step 6: Page thin shell (PS-04)
 - [ ] Step 7: Queries 패턴 (DF-01, DF-02 — queryOptions factory, key 의존성)
