@@ -1,7 +1,7 @@
 ---
 name: frontend-conventions
 description: Locks in opinionated frontend code patterns for Next.js 16 + TanStack Query v5 + FSD projects. ALWAYS invoke when writing data-fetching code (NEVER useEffect+fetch — always TanStack Query), creating forms (always react-hook-form + zod), introducing client state (Zustand for client-global only — NEVER for server data, NEVER Context for data sharing), implementing tables (TanStack Table v8 + manualPagination + nuqs URL state), or working in entities/features/widgets/app folders. Pairs with feature-sliced-design skill — defers all FSD architecture decisions there. Resolves ambiguity when multiple BP skills offer conflicting recommendations by locking in one direction.
-version: 2.0.0
+version: 2.1.0
 ---
 
 # Frontend Conventions (Personal Harness)
@@ -13,6 +13,8 @@ version: 2.0.0
 **우선순위**: 이 skill의 규칙이 다른 BP skill의 권고와 충돌하면 **이 skill이 우선**한다 (이 프로젝트의 의도적 선택).
 
 **예외**: FSD 아키텍처 영역(레이어 구조, import 방향, slice/widget/feature 정의, **entity 파일 구성** — v2.0.0부터)은 `feature-sliced-design` skill에 **전적 위임**. 이 skill은 그 위에 추가로 고정한 컨벤션만 다룬다.
+
+**Single-use feature 정책 (v2.1.0)**: FSD v2.1 Section 5-2/Section 6은 단일 사용 features의 view inline을 권장(*insignificant slice*)한다. 이 harness는 **분리 유지를 의식적 선택**으로 채택한다 — 이유: ① AI 코드 생성 일관성(features에 정해진 자리), ② 모노레포 재사용 가능성(다른 앱에서 import 가능), ③ DF-06 mutation orchestrator의 책임 분리 명확성. 자세한 근거: [ADR-022](DECISIONS.md#adr-022-단일-사용-features-분리-허용--fsd-insignificant-slice-권장-대비-의식적-선택).
 
 ---
 

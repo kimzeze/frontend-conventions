@@ -1,6 +1,7 @@
 # Frontend Conventions Index
 
 > AI 에이전트가 참조하는 72개 규칙의 요약 + 상세 파일 링크.
+> v2.1.0 추가 정책: 단일 사용 features 분리 허용 ([ADR-022](DECISIONS.md#adr-022-단일-사용-features-분리-허용--fsd-insignificant-slice-권장-대비-의식적-선택)).
 
 ## Entity 구조 템플릿
 
