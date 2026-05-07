@@ -649,6 +649,76 @@ dashboard에서 검증된 v2 구조가 잘 작동함을 코드 + typecheck + 동
 
 ---
 
+## ADR-022: 단일 사용 features 분리 허용 — FSD insignificant-slice 권장 대비 의식적 선택
+
+**Status**: Accepted (v2.1.0, 2026-05-06)
+
+**Context**
+
+FSD v2.1 Section 5-2 / Section 6 / Steiger linter `insignificant-slice` 규칙은 *"단일 페이지에서만 사용되는 entity/feature는 해당 페이지(view)에 inline해야 한다"*고 권장한다. ADR-021(v2.0.0)에서 FSD에 entity 파일 구성을 위임한 결과, *"FSD 결정에 모두 따라야 하는가?"*라는 후속 질문이 자연스럽게 발생.
+
+dashboard 앱의 단일 사용 features 사례:
+- `features/student-crud` → `views/students`에서만 사용
+- `features/student-bulk-upload` → `views/student-bulk-upload`에서만 사용
+- `features/student-filters` → `views/students`에서만 사용
+
+FSD 가이드대로면 모두 `views/`로 inline해야 하나, 다음 트레이드오프를 분석한 결과 분리 유지가 낫다고 판단.
+
+**Decision**
+
+**단일 사용 features도 분리 유지**를 의식적으로 선택한다. FSD `insignificant-slice` 권장은 따르지 않는다.
+
+이유:
+
+1. **AI 코드 생성 일관성**: features에 정해진 자리가 있어야 AI가 새 mutation/dialog를 매번 같은 위치에 생성. inline 시 view 파일 안 어디에 둘지 매 세션마다 결정 필요 → 결과 일관성 저하.
+2. **모노레포 재사용 가능성**: 본 컨벤션은 multiple apps(admin/dashboard/...) 모노레포 환경 가정. 단일 사용이라도 다른 앱에서 import할 가능성 — 그때 분리되어 있으면 import만, inline이면 추출 작업 필요.
+3. **DF-06 mutation orchestrator 책임 분리 명확성**: features 레이어에 mutation orchestrator(toast + cross-domain invalidation) 두는 패턴이 명확. inline 시 view 안에 mutation 로직 + composition 혼재.
+4. **FSD 가이드 자체도 "team agrees" 강조**: *"Extract to lower layers only when needed. When extraction seems worthwhile, discuss with the team"* — `insignificant-slice`는 강제가 아니라 *권장*이며, 분리할 가치가 있으면 분리해도 된다고 명시.
+
+**FSD 가이드의 권장 vs 우리 컨텍스트**:
+
+| FSD가정 | 우리 컨텍스트 |
+|---------|-------------|
+| Small/single-app project | Multi-app 모노레포 (admin + dashboard) |
+| 사람이 작성/유지 | AI가 주로 코드 생성 |
+| inline = 단순함 | inline = AI 일관성 저하 |
+| 분리 = 추상화 비용 | 분리 = 재사용성 + 정해진 자리 |
+
+→ FSD의 권장 근거가 우리 컨텍스트에는 부분적으로만 적용. 분리가 더 큰 가치.
+
+**Consequences**
+
+- ✓ AI가 새 mutation/dialog 생성 시 features에 정해진 자리에 작성 (일관성)
+- ✓ admin 앱에 같은 feature 추가 시 import만으로 재사용
+- ✓ DF-06 패턴이 features 레이어 존재로 더 명확
+- ✓ view는 composition만 책임 (thin shell + features 조합)
+- ✗ FSD `insignificant-slice` linter 경고 발생 가능 (의식적 무시)
+- ✗ 작은 feature도 별도 폴더 + index.ts 필요 (boilerplate)
+
+**Why this is not just contradicting v2.0.0**
+
+ADR-021(PS-03 제거)은 *명확한 안티패턴*(파일 응집도 저하)에 대한 FSD 정합. ADR-022는 *트레이드오프 영역*(모듈 분리 vs inline)에서 우리 컨텍스트 기반 의식적 선택. **두 결정의 성격이 다름**:
+
+| 항목 | 차원 | FSD 따라야 할까? |
+|------|------|-----------------|
+| PS-03 (파일명) | 파일 응집도 — 실증된 안티패턴 | ✅ 따름 (ADR-021) |
+| Single-use feature 분리 | 모듈 응집도 — 트레이드오프 | ❌ 컨텍스트 의존, 의식적 분리 (ADR-022) |
+
+**Alternatives considered**
+
+- **FSD insignificant-slice 권장 따라 inline**: AI 일관성 저하 + 모노레포 재사용 차단. dashboard에서 검증된 분리 패턴을 굳이 깨트림. 작업량 대비 가치 없음.
+- **PS-XX 신규 규칙 추가** (예: *"PS-17: 단일 사용 features 분리 허용 — SHOULD"*): v1.1.0/v2.0.0의 *"FSD architecture는 위임"* 정책과 일관성 깨짐. ADR로 정책 명문화하는 게 더 자연스러움.
+- **부분 적용** (작은 feature만 inline, 큰 feature는 분리): 일관성 깨짐. *"왜 이건 분리되고 저건 안 되지?"* 질문 발생.
+
+**Related**:
+- [feature-sliced-design skill](https://skills.sh/feature-sliced/skills/feature-sliced-design) Section 5-2 (Be conservative with entities), Section 6 (Anti-patterns), Steiger `insignificant-slice` rule
+- [ADR-021 (PS-03 제거)](#adr-021-ps-03-제거--fsd-도메인-기반-네이밍-채택) — *명확한 안티패턴*에 대한 FSD 정합 결정
+- [SKILL.md Position](./SKILL.md#position) — Single-use feature 정책 명시
+- [Issue #163 (frontend-aptimizer): 단일 사용 features inline 검토](https://github.com/aptimizer-co/frontend-aptimizer/issues/163)
+- [DF-06 (mutations.md)](./rules/mutations.md) — features에서 toast + cross-domain invalidation 처리
+
+---
+
 # Open Questions
 
 아직 결정되지 않았거나, 프로젝트 성장에 따라 재검토가 필요한 항목들.

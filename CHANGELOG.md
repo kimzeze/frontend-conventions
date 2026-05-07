@@ -3,6 +3,36 @@
 모든 주요 변경사항은 이 파일에 기록됩니다.
 이 프로젝트는 [Semantic Versioning](https://semver.org/)을 따릅니다.
 
+## [2.1.0] - 2026-05-06
+
+### 🎯 단일 사용 features 정책 명시
+
+ADR-021(v2.0.0)에서 FSD에 entity 파일 구성을 위임한 결과, *"FSD 결정 모두 따라야 하는가?"* 후속 질문 발생. 특히 FSD Section 5-2 / Steiger `insignificant-slice`의 *"단일 사용 features는 view에 inline"* 권장에 대해 dashboard 사례 분석 후 **분리 유지를 의식적 선택**으로 결정.
+
+### Added
+
+- **ADR-022** — 단일 사용 features 분리 허용. FSD `insignificant-slice` 권장 대비 의식적 선택. 근거: AI 코드 생성 일관성 + 모노레포 재사용 + DF-06 책임 분리.
+- **SKILL.md Position 보강** — *"Single-use feature 정책"* 섹션 추가. FSD insignificant-slice 권장과의 차이 명시.
+
+### Why not just rule (PS-XX)?
+
+- v1.1.0/v2.0.0의 *"FSD architecture는 feature-sliced-design skill에 전적 위임"* 정책과 일관성 유지를 위해 신규 규칙(PS-XX) 추가하지 않음
+- 정책 명문화는 ADR + SKILL.md Position으로 충분
+- AI는 SKILL.md(항상 로드) → ADR(필요 시 참조) 순으로 컨텍스트 확보
+
+### Severity System (Unchanged)
+
+- 🚫 MUST: 30 (변동 없음)
+- ⚠️ SHOULD: 33 (변동 없음)
+- ✅ MAY: 9 (변동 없음)
+- 총: 72개 규칙 (변동 없음)
+
+### Migration
+
+기존 v2.0.0 코드 영향 없음. dashboard 앱에 이미 적용된 features 분리 패턴이 컨벤션으로 명문화된 형태.
+
+---
+
 ## [2.0.0] - 2026-05-06
 
 ### 💥 Breaking Changes — FSD v2.1 정합 채택

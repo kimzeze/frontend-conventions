@@ -3,7 +3,7 @@
 > **Next.js 16 + React 19 + TanStack Query v5 + FSD** 기반 개인 프론트엔드 harness.
 > 다른 BP skill들이 보여주는 여러 방향 중 **사용자가 선택한 한 방향만 고정**하여 AI 코드 생성·리뷰 일관성을 보장하는 **Claude Code skill**.
 
-[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](./CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-skill-purple.svg)](https://code.claude.com/docs/en/skills)
 
@@ -81,7 +81,7 @@ frontend-conventions/
 ├── README.md           ← 이 파일 (공개 진입점)
 ├── SKILL.md            ← Claude Code skill 진입점 (canonical)
 ├── INDEX.md            ← 72개 규칙 전체 인덱스
-├── DECISIONS.md        ← ADR 형식 설계 결정 (21 ADRs + Open Questions)
+├── DECISIONS.md        ← ADR 형식 설계 결정 (22 ADRs + Open Questions)
 ├── CHANGELOG.md        ← 버전별 변경사항
 └── rules/              ← 12개 카테고리별 규칙
     ├── library-choices.md     (LIB-01~06)
@@ -140,7 +140,8 @@ frontend-conventions/
 
 ## Version
 
-- **v2.0.0** (현재) — PS-03 제거 (FSD v2.1 도메인 기반 네이밍 채택), entity 파일 구성을 `feature-sliced-design` skill에 완전 위임
+- **v2.1.0** (현재) — 단일 사용 features 분리 허용 정책 명시 (ADR-022). FSD `insignificant-slice` 권장 대비 의식적 선택.
+- v2.0.0 — PS-03 제거 (FSD v2.1 도메인 기반 네이밍 채택), entity 파일 구성을 `feature-sliced-design` skill에 완전 위임
 - v1.1.0 — Library Choices 카테고리 신설, Zustand BP 추가, FSD 위임 시작, Override Policy 명문화
 - v1.0.0 — 초기 release (67 rules, 11 categories)
 
